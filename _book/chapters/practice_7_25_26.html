@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="כרם אביטל">
+
+<title>קורס מבוא ל-R - תרגיל 7 - הסקה סטטיסטית</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/writing_code_correctly.html" rel="next">
+<link href="../chapters/practice_6_25_26.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../style_heb.css">
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../chapters/practice_1_25_26.html">תרגולים</a></li><li class="breadcrumb-item"><a href="../chapters/practice_7_25_26.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">תרגיל 7 - הסקה סטטיסטית</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">קורס מבוא ל-R</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ברוכים הבאים!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">תרגולים</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_1_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 1 - היכרות עם R ו-Rstudio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_2_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 2 - היכרות עם Data frames</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_3_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 3 - Tidyverse ועוד</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_4_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 4 - גרפים (ggplot) ועוד tidyverse</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_5_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 5 - ggplot ווקטורים</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_6_25_26.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">תרגיל 6 - across, אחוזונים, טבלאות ופונקציות</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/practice_7_25_26.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">תרגיל 7 - הסקה סטטיסטית</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/writing_code_correctly.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">איך לכתוב קוד יפה (בעידן ה-AI ובכלל)</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#להתכונן" id="toc-להתכונן" class="nav-link active" data-scroll-target="#להתכונן">1.להתכונן</a></li>
+  <li><a href="#מבחן-t" id="toc-מבחן-t" class="nav-link" data-scroll-target="#מבחן-t">2. מבחן T</a></li>
+  <li><a href="#מבחן-חי-בריבוע" id="toc-מבחן-חי-בריבוע" class="nav-link" data-scroll-target="#מבחן-חי-בריבוע">3. מבחן חי בריבוע</a></li>
+  <li><a href="#ועכשיו-עם-gtsummary" id="toc-ועכשיו-עם-gtsummary" class="nav-link" data-scroll-target="#ועכשיו-עם-gtsummary">4. ועכשיו עם gtsummary</a></li>
+  <li><a href="#מתאם-קורלציה" id="toc-מתאם-קורלציה" class="nav-link" data-scroll-target="#מתאם-קורלציה">5. מתאם (קורלציה)</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">תרגיל 7 - הסקה סטטיסטית</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>כרם אביטל </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="להתכונן" class="level2" dir="rtl">
+<h2 class="anchored" data-anchor-id="להתכונן">1.להתכונן</h2>
+<ul>
+<li><p>היום נתאמן בלעבוד עם קבצי RMD. אנחנו רוצים שתעבדו איתם במבחן. אז תורידו קובץ targil_7_temp.rmd שנמצא במודל</p></li>
+<li><p>להעלות את ספריות <strong><em>tidyverse</em></strong> ו-<strong>gtsummary</strong></p></li>
+<li><p>נעבוד עם נתוני <strong>trial</strong> שנמצאים בתוך חבילת <strong>gtsummary</strong> נטען אותם כאובייקט בשם <strong>trial_df</strong> ונסתכל עליהם קצת. הנתונים הם עבור טיפול בתרופות שונות עבור חולי סרטן.</p></li>
+</ul>
+</section>
+<details>
+<summary>
+Press to show R code
+</summary>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#load the data trial from gtsummary</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>trial_df<span class="ot">&lt;-</span> trial</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(trial_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<section id="מבחן-t" class="level2" dir="rtl">
+<h2 class="anchored" data-anchor-id="מבחן-t">2. מבחן T</h2>
+<ul>
+<li><p>נבצע מבחן t פשוט - <strong>t.test()</strong> על המשתנה הרציף <strong>marker</strong> מול המשתנה הפקטורילי <strong>trt</strong></p></li>
+<li><p>נבדוק מה קורה אם אנחנו הופכים את הסדר של המשתנים (הודעת שגיאה).</p></li>
+<li><p>נבצע את אותו מבחן הפעם נשתמש בארגומנט =<strong>data</strong> וגם נשמור את התוצאה בשם <strong>marker_ttest_results</strong><br>
+נוציא מתוך האובייקט שיצרנו נתונים שונים</p></li>
+<li><p>נתקין ונטען את חבילת <strong>broom</strong> עבור הפקודה (המאד שימושית) <strong>tidy</strong>, ונריץ אותה על <strong>marker_ttest_results</strong></p></li>
+<li><p>ננסה לבדוק את ההבדלים במשתנה <strong>ttdeath</strong> בין <strong>trt</strong>. התוצאה לא מובהקת אבל גם לא כלכך רחוקה</p></li>
+<li><p>כעת ננסה להריץ את המבחן שוב אבל רק עבור נבדקים ב-<strong>stage</strong>=T4. תחילה נעשה את זה בגישת base R (כה מעיק!😿) נשמור את התוצאה בשם <strong>ttdeath_ttest_t4_a</strong></p>
+<p>👈 <strong>זה הזמן להכיר את חבילת rstatix!</strong> שזו חבילה שמאפשרת ביצוע מבחנים סטטיסטיים בגישת tidyverse.</p></li>
+<li><p>נשתמש בפקודת <strong>t_test</strong> בשילוב עם <strong>pipe</strong> נשמור את התוצאה תחת <strong>ttdeath_ttest_t4_b</strong> (ה-PV שנקבל יהיה זהה לזה ממקודם) התוצאה מתקבלת כבר בפורמט tidy נוח.</p></li>
+<li><p>אפשר גם להשתמש ב-<strong>group_by</strong> כדי להריץ בבת אחת מבחנים על כל ה-<strong>stages</strong></p></li>
+<li><p>נמחק את כל האובייקטים למעט <strong>trial_df</strong></p></li>
+</ul>
+</section>
+<details>
+<summary>
+Press to show R code
+</summary>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#T </span><span class="al">TEST</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#run some basic t.test</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(trial_df<span class="sc">$</span>marker <span class="sc">~</span> trial_df<span class="sc">$</span>trt)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#test what happens if we switch the order of the variables - it will throw an error</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(trial_df<span class="sc">$</span>trt <span class="sc">~</span> trial_df<span class="sc">$</span>marker)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also add the data argument</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(marker <span class="sc">~</span> trt, <span class="at">data=</span>trial_df)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#save the result as an object</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>marker_ttest_results<span class="ot">&lt;-</span> <span class="fu">t.test</span>(marker <span class="sc">~</span> trt, <span class="at">data=</span>trial_df)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>marker_ttest_results</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>marker_ttest_results<span class="sc">$</span>p.value</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>marker_ttest_results<span class="sc">$</span>method</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#load broom </span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("broom")</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>marker_ttest_results_tidy<span class="ot">&lt;-</span> <span class="fu">tidy</span>(marker_ttest_results) <span class="co">#this will give us a nice df</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#check the ttdeath per trt </span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(trial_df<span class="sc">$</span>ttdeath <span class="sc">~</span> trial_df<span class="sc">$</span>trt)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#check the ttdeath per trt but only for stage T4 - this is very tedious</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>ttdeath_ttest_t4_a <span class="ot">&lt;-</span> <span class="fu">t.test</span>(trial_df<span class="sc">$</span>ttdeath[trial_df<span class="sc">$</span>stage<span class="sc">==</span><span class="st">"T4"</span>] <span class="sc">~</span> trial_df<span class="sc">$</span>trt[trial_df<span class="sc">$</span>stage<span class="sc">==</span><span class="st">"T4"</span>])</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#time for shortcuts...</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("rstatix")</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstatix)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#t test with tidyverse approach </span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>ttdeath_ttest_t4_b<span class="ot">&lt;-</span> trial_df <span class="sc">%&gt;%</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(stage<span class="sc">==</span><span class="st">"T4"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t_test</span>(ttdeath <span class="sc">~</span> trt)</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#we can also use group_by</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>ttdeath_ttest_per_stage<span class="ot">&lt;-</span> trial_df <span class="sc">%&gt;%</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stage) <span class="sc">%&gt;%</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t_test</span>(ttdeath <span class="sc">~</span> trt)</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>ttdeath_ttest_per_stage</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">setdiff</span>(<span class="fu">ls</span>(),<span class="st">"trial_df"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<section id="מבחן-חי-בריבוע" class="level2" dir="rtl">
+<h2 class="anchored" data-anchor-id="מבחן-חי-בריבוע">3. מבחן חי בריבוע</h2>
+<ul>
+<li><p>ניצור משתנה דיכוטומי בשם <strong>survived_1year</strong> עבור משתתפים ששרדו שנה או יותר</p></li>
+<li><p>נבצע מבחן חי <strong>chisq.test()</strong> בין המשתנה החדש מול משתנה <strong>trt</strong>. ונשמור בשם <strong>chi_test_survived1</strong>.</p>
+<ul>
+<li>נוציא מתוך האובייקט שיצרנו את הערך של <strong>p.value</strong>.</li>
+<li>נריץ גם tidy() על האובייקט</li>
+</ul></li>
+<li><p>נבנה טבלת שכיחויות פשוטה בעזרת פקודת <strong>table</strong> ונשמור בשם <strong>survived_vs_trt</strong></p></li>
+<li><p>נבצע מבחן chi על הטבלה <strong>survived_vs_trt</strong> ונשמור בשם <strong>chi_test_survived2</strong></p></li>
+<li><p>נשווה בין <strong>chi_test_survived1</strong> ל-<strong>chi_test_survived2</strong> (התוצאות אמורות לצאת זהות)</p></li>
+<li><p>נתנסה בלהריץ מבחן חי בריבוע עם שלוש קטגוריות: השוואה בשרידה יותר משנה עבור <strong>grades</strong> שונים</p></li>
+</ul>
+</section>
+<details>
+<summary>
+Press to show R code
+</summary>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">##CHI </span><span class="al">TEST</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>trial_df2<span class="ot">&lt;-</span> trial_df <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">survived_1year=</span><span class="fu">if_else</span>(ttdeath<span class="sc">&gt;=</span><span class="dv">12</span>,<span class="cn">TRUE</span>,<span class="cn">FALSE</span>))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>chi_test_survived_trt<span class="ot">&lt;-</span> <span class="fu">chisq.test</span>(trial_df2<span class="sc">$</span>survived_1year, trial_df2<span class="sc">$</span>trt)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>chi_test_survived_trt</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>chi_test_survived_trt<span class="sc">$</span>p.value</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(chi_test_survived_trt) <span class="sc">%&gt;%</span> <span class="fu">view</span>()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#create a frequency table</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>survived_vs_trt<span class="ot">&lt;-</span> <span class="fu">table</span>(trial_df2<span class="sc">$</span>survived_1year, trial_df2<span class="sc">$</span>trt)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>survived_vs_trt</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#do chi test on the freq table</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>chi_test_survived_trt2<span class="ot">&lt;-</span><span class="fu">chisq.test</span>(survived_vs_trt) <span class="co">#will produce the same results</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>chi_test_survived_trt2<span class="sc">$</span>p.value</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># chi square test with more than 2 categories</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>chi_test_survived_grade<span class="ot">&lt;-</span> <span class="fu">chisq.test</span>(trial_df2<span class="sc">$</span>survived_1year, trial_df2<span class="sc">$</span>grade)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>chi_test_survived_grade</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">setdiff</span>(<span class="fu">ls</span>(),<span class="st">"trial_df2"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<section id="ועכשיו-עם-gtsummary" class="level2" dir="rtl">
+<h2 class="anchored" data-anchor-id="ועכשיו-עם-gtsummary">4. ועכשיו עם gtsummary</h2>
+<ul>
+<li><p>נריץ <strong>tbl_summary()</strong> על הנתונים שלנו</p></li>
+<li><p>בדומה לתרגיל הקודם נוסיף מספר ארגומנטים לפונקציית-<strong>tbl_summary</strong> ונשמור כאובייקט בשם <strong>summary_table</strong>:</p>
+<ul>
+<li><p><strong>by</strong> בשביל החלוקה לקבוצות <strong>trt</strong></p></li>
+<li><p><strong>missing=“no”</strong> בשביל להוריד ערכים ריקים</p></li>
+<li><p><strong>statistic</strong> בשביל להגדיר אלו מדדים ושכיחויות להציג ובאיזה פורמט</p></li>
+</ul></li>
+<li><p>נוסיף pipe ואז את הפונקציה <strong>modify_caption</strong> כדי להגדיר כותרת לגרף</p></li>
+<li><p>נוסיף עוד pipe הפעם עבור הפונקציה <strong>add_p</strong> כדי להוסיף מבחן סטטיסטי שמשווה בין הקבוצות</p></li>
+<li><p>נגדיר בתוך <strong>add_p</strong> שעל כל המשתנים הרציפים נריץ <strong>t.test</strong> (הדיפולט של החבילה הוא מבחן א-פרמטרי)</p>
+<p>👈שימו לב שהשמות בטבלה נוחים לקריאה ושונים לגמרי מהשמות שיש ב-df עצמו. יש שיטה להגדיר תגים לשמות המשתנים בעזרת חבילה שנקראת labelled וגם אפשר לעשות את זה ישירות בעזרת <strong>gtsummary</strong> - מחוץ ל-scope של הקורס הזה.</p></li>
+<li><p>נריץ שוב את הקוד של <strong>gtsummary</strong> ונשמור כאובייקט בשם <strong>sum_table</strong> נוסיף לסוף הקוד של בניית הטבלה את הפקודה <strong>as_gt()</strong> שתסייע לנו ליצוא של הטבלה</p></li>
+<li><p>נשתמש בפקודת השמירה מתוך חבילת <strong>gt</strong> <strong>gt::gtsave()</strong> ונשמור כאובייקט <strong>html</strong> ואז כאובייקט <strong>docx</strong>.</p></li>
+</ul>
+</section>
+<details>
+<summary>
+Press to show R code
+</summary>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Basic summary table with gtsummary</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>trial_df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#add spliting by treatment</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>trial_df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(<span class="at">by=</span>trt) <span class="co">#split by trt</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>summary_table <span class="ot">&lt;-</span> trial_df2 <span class="sc">%&gt;%</span>  <span class="co">#save as an object</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">by=</span>trt, </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">missing =</span> <span class="st">"no"</span>, <span class="co"># hide missing data</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>( <span class="co">#argument for the statistic showed on the table</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean} ({sd})"</span>,  <span class="co">#for numeric variables: mean (sd)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">"{n}({p}%)"</span> <span class="co">#for categorical variables: n (%) </span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    )) </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>summary_table</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">#some more customization</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>summary_table<span class="ot">&lt;-</span>summary_table <span class="sc">%&gt;%</span> </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_caption</span>(<span class="st">"Summary of the trial data"</span>) <span class="sc">%&gt;%</span> <span class="co">#change the title</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_p</span>(</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">test =</span> <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"t.test"</span>,  <span class="co">#change the test (default is nonparametric)</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>summary_table</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>summary_table <span class="ot">&lt;-</span> summary_table <span class="sc">%&gt;%</span> </span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_gt</span>() <span class="co">#this change nothing in what we see but it will be useful for saving the table</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co">#export the table as html looks better but it is not editable</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>gt<span class="sc">::</span><span class="fu">gtsave</span>(summary_table,<span class="st">"output/summary_table.html"</span>)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co">#export the table as docx - this is editable but remove some of the formatting (but keeps getting better)</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>gt<span class="sc">::</span><span class="fu">gtsave</span>(summary_table,<span class="st">"output/summary_table.docx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<section id="מתאם-קורלציה" class="level2" dir="rtl">
+<h2 class="anchored" data-anchor-id="מתאם-קורלציה">5. מתאם (קורלציה)</h2>
+<ol type="1">
+<li><p>ניצור גרף <strong>ggplot</strong> מהיר לבדיקה ויזואלית של הקשר בין המשתנים <strong>ttdeath</strong> ו-<strong>marker</strong></p></li>
+<li><p>בעזרת פקודת <strong>cor.test()</strong> נבצע בדיקת <strong>קורלציה</strong> בין המשתנים <strong>marker</strong> ו-<strong>ttdeath</strong> ונשמור בשם <strong>t_death_marker_cor</strong></p></li>
+<li><p>נתנסה בלהוציא ערכים מתוך <strong>t_death_marker_cor</strong></p></li>
+<li><p>נשנה את סוג המבחן ל-<strong>spearman</strong></p></li>
+<li><p>נעזר שוב בחבילת <strong>rstatix</strong> ונשתמש בפקודה <strong>cor_test</strong> בשביל לבחון את הקורלציות בחלוקה לקבוצות.</p></li>
+<li><p>ניצור שוב גרף הפעם בחלוקה לקבוצות ונשמור אותו בשם <strong>ttdeath_age_per_trt_plot</strong></p></li>
+<li><p>בעזרת חבילת <strong>ggpubr</strong> נתנסה בהוספת <strong>stat_cor()</strong> לגרפים שיצרנו<br>
+</p></li>
+</ol>
+</section>
+<details>
+<summary>
+Press to show R code
+</summary>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## correlations</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#quick vizualizaion the correlation between ttdeath and marker</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>trial_df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>ttdeath,<span class="at">y=</span>marker))<span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()<span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#correlation test</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>t_death_marker_cor<span class="ot">&lt;-</span> <span class="fu">cor.test</span>(trial_df2<span class="sc">$</span>marker, trial_df2<span class="sc">$</span>ttdeath)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#extract the p value</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>t_death_marker_cor<span class="sc">$</span>p.value</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#extract the correlation (R2)</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>t_death_marker_cor<span class="sc">$</span>estimate</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#Spearman correlation test (will throw a warning but that's ok)</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>t_death_marker_cor_spearman<span class="ot">&lt;-</span> <span class="fu">cor.test</span>(trial_df2<span class="sc">$</span>marker, trial_df2<span class="sc">$</span>ttdeath, <span class="at">method =</span> <span class="st">"spearman"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>t_death_marker_cor_spearman</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co"># test per trt group with rstatix</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>ttdeath_age_cor_per_trt<span class="ot">&lt;-</span> trial_df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trt) <span class="sc">%&gt;%</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor_test</span>(marker, ttdeath)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(ttdeath_age_cor_per_trt)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">#vizualizaion the correlation between ttdeath and marker per trt</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>ttdeath_age_per_trt_plot<span class="ot">&lt;-</span> trial_df2 <span class="sc">%&gt;%</span> </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>ttdeath,<span class="at">y=</span>marker))<span class="sc">+</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()<span class="sc">+</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)<span class="sc">+</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>trt)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>ttdeath_age_per_trt_plot</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co">#load ggpubr for the stat_cor function</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="co">#add the correlation values to the plot</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>ttdeath_age_per_trt_plot <span class="sc">+</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_cor</span>(<span class="at">method =</span> <span class="st">"pearson"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../chapters/practice_6_25_26.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">תרגיל 6 - across, אחוזונים, טבלאות ופונקציות</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/writing_code_correctly.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-title">איך לכתוב קוד יפה (בעידן ה-AI ובכלל)</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

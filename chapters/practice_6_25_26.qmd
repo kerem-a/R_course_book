@@ -1,0 +1,549 @@
+---
+title: "תרגיל 6 - across, אחוזונים, טבלאות ופונקציות"
+author: כרם אביטל
+execute:
+  eval: false
+output:
+  html_document:
+    css: style_chap.css
+    code-overflow: wrap
+    code-fold: true
+---
+
+```{r  message=FALSE, warning=FALSE, include=FALSE}
+
+library(emo)
+
+```
+
+::: {dir="rtl"}
+## 1.להתכונן
+
+-   להעלות את ספריות ***tidyverse*** ו-***readexl***
+
+-   נריץ שוב את הקוד שהרצנו בתחילת התרגיל הקודם כדי ליבא את הלשוניות הלשוניות מתוך **validation_study.xlsx**. לאחד בינהם וליצור את המשתנה של קטוגריות גיל
+
+-   נוסיף עוד שורה של קוד בשביל לנקות את הסביבה שלנו מהDF הזמניים
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+library(readxl)
+library(tidyverse) 
+
+# load the data
+val_study_macro<-  read_excel("data/validation_study.xlsx", sheet = "macro_nutrients")
+
+val_study_micro<-  read_excel("data/validation_study.xlsx", sheet = "micro_nutrients")
+#load the characteristics data
+val_study_char<-  read_excel("data/validation_study.xlsx", sheet = "characteristics")
+
+# join macro and micro nutrient data
+val_study_nut<- val_study_macro %>% 
+  left_join(val_study_micro, by=c("index_code","tool"))
+
+#remove mutual column
+val_study_char<- val_study_char %>% 
+  select(-tool)
+
+#join the two data sets
+val_study_join <- val_study_nut %>% 
+  left_join(val_study_char,by="index_code")
+
+glimpse(val_study_join)
+
+# create age groups
+val_study_analysis_ready <- val_study_join %>% 
+  mutate(age_group = case_when(
+    age < 30 ~ "Young",
+    age >= 30 & age < 50 ~ "Middle",
+    age >= 50 ~ "Old"
+  ),
+  age_group = factor(age_group, levels = c("Young","Middle","Old")))
+
+
+rm(list=setdiff(ls(), c("val_study_analysis_ready"))) # remove all objects except val_study_analayze_ready
+```
+
+</details>
+
+::: {dir="rtl"}
+## 2. תזכורת (נוספת) לחישוב משתנים כמותיים
+
+-   בעזרת פונקציית **summarise** צרו DF בשם **summary_energy** שמכיל את הממוצע החציון וה-SD של האנרגיה.
+
+-   נכיר את פונקציית **round** ונעגל בעזרתה את התוצאות
+
+-   צרו DF בשם **summary_energy_per_tool** שמבצע את אותם חישובים מחלק את התוצאות לפי המשתנה **tool**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+summary_energy <-val_study_analysis_ready %>% 
+  summarise(mean_eng=mean(food_energy,na.rm = T),
+            median_eng=median(food_energy,na.rm = T),
+            sd_eng=sd(food_energy,na.rm = T)
+  )
+
+view(summary_energy)
+
+#get to know the round function
+round(3.14159) 
+round(3.14159,2)
+round(summary_energy$mean_eng,2)
+
+#now let's round all the values in the summary
+summary_energy<-val_study_analysis_ready %>% 
+  summarise(mean_eng=round(mean(food_energy,na.rm = T),2),
+            median_eng=round(median(food_energy,na.rm = T),2),
+            sd_eng=round(sd(food_energy,na.rm = T),2)
+  )
+
+#grouping per tool and summarizing
+summary_energy_per_tool<- val_study_analysis_ready %>% 
+  group_by(tool) %>% 
+  summarise(mean_eng=round(mean(food_energy,na.rm = T),2),
+            median_eng=round(median(food_energy,na.rm = T),2),
+            sd_eng=round(sd(food_energy,na.rm = T),2)
+  ) %>% 
+  ungroup()
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. ביצוע חישוב מדדים עבור כמה משתנים בבת אחת - across
+
+-   חשבו את **החציון** עבור פחמימות, שומן וחלבון בחלוקה לקבוצות גיל:
+
+    -   תחילה חשבו כל מדד בנפרד
+    -   לאחר מכן בעזרת פונקציית **across**
+    -   הוסיפו את הארגומנט **.names** לפונקציית **across** כדי להוסיף את המילה "**\_median**" לשם של כל עמודה
+
+-   חשבו את החציון עבור **כל המשתנים הכמותיים** בעזרת שימוש ב-where(is.numeric) שמרו את ה-DF בשם **median_all_numeric**
+
+-   צרו וקטור בשם **macro_nuts** עם כל המאקרונוטריינטים:\
+    food_energy", "protein","total_fat", "carbohydrates" ,"total_dietary_fiber"\
+    (שמות המשתנים צריכים להיות כטקסט בוקטור)
+
+-   כעת חשבו את החציון עבור כל המשתנים האלו ושמרו כ-DF חדש בשם **macro_nuts_median**
+
+-   **עגלו** את כל המשתנים ב-**macro_nuts_median** לספרה אחת אחרי הנקודה
+
+👈 יצירת וקטורים של שמות משתנים שאתם מתמקדים בהם באנליזות יכולה לעזור לכם לא ללכת לאיבוד.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#calculate the median for some nutrients 
+#the long way
+med_nuts1<- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    carbs_med=median(carbohydrates, na.rm = TRUE), 
+    fat_med=median(total_fat, na.rm = TRUE),
+    protein_med=median(protein, na.rm = TRUE)
+  )%>% 
+  ungroup()
+
+med_nuts1
+#using across
+med_nuts2<- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    across(.cols=c(carbohydrates,total_fat,protein), #select the columns
+           .fns=~median(.,na.rm = TRUE) #apply the function
+    ))%>% 
+  ungroup()
+
+med_nuts2
+#change the name of the variables
+med_nuts2<- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    across(.cols=c(carbohydrates,total_fat,protein), #select the columns
+           .fns=~median(.,na.rm = TRUE), #apply the function
+           .names = "{col}_median" #change the name
+           
+    ))%>% 
+  ungroup()
+
+#calculate the median for all the numeric variables
+median_all_numeric <- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    across(.cols=where(is.numeric),
+           .fns=~median(.,na.rm = TRUE),
+           .names = "{col}_median"
+    ))%>% 
+  ungroup()
+
+#create a vector for multiple variables
+macro_nuts <- c("food_energy", "protein","total_fat", "carbohydrates" ,"total_dietary_fiber")
+
+#calculate the median for all the macro_nuts
+median_macro_nuts <- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    across(.cols=all_of(macro_nuts),
+           .fns=~median(.,na.rm = TRUE),
+           .names = "{col}_median"
+    )) %>% 
+  ungroup() 
+
+median_macro_nuts
+
+median_macro_nuts_round<- median_macro_nuts %>% 
+mutate(across(where(is.numeric),
+                .fns=~round(.,1)
+  ))
+
+median_macro_nuts_round
+```
+
+</details>
+
+::: {dir="rtl"}
+## 4. טבלאות עם gt_summary
+
+-   ניצור טבלה בסיסית בעזרת gt_summay::tbl_summary (לא לשכוח להוריד לפני את העמודה index_code
+
+-   נוסיף ארגומנט "by" כדי לחלק את הטבלה לפי ה-tool
+
+-   ניצור טבלה בשם nut_table שבה נתמקד רק בנוטריינטים בחלוקה לפי tool
+
+    -   נבחר את העמודות של macro_nuts שיצרנו ונוסיף גם את הסידן והברזל
+
+    -   נשנה את החישוב הדיפולטיבי של gtsummary לממוצע עם sd
+
+-   ניצור table 1:
+
+    -   נוציא מה-df שלנו את הנוטריינטים
+
+    -   נוסיף ארגומנט שמסיר ערכים חסרים
+
+    -   נוסיף הגדרה שמשנה את הדיפולט של החישוב לערכים קטגוריליים
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+library(gtsummary)
+val_study_analysis_ready %>% 
+  select(-index_code) %>%
+  tbl_summary()
+val_study_analysis_ready %>% 
+  select(-index_code) %>%
+  tbl_summary(by=tool)
+
+val_study_analysis_ready %>%
+  select(tool, all_of(macro_nuts), calcium, iron) %>% 
+  tbl_summary(
+  by=tool,
+missing = "no", # hide missing data
+statistic = list( #argument for the statistic showed on the table
+  all_continuous() ~ "{mean} ({sd})"  #for numeric variables: mean (sd)
+)) 
+
+
+table1<- val_study_analysis_ready %>%
+  select(-index_code, -all_of(macro_nuts),-calcium,-iron) %>% 
+  tbl_summary(
+  by=tool,
+missing = "no", 
+statistic = list( #argument for the statistic showed on the table
+  all_continuous() ~ "{mean} ({sd})",  #for numeric variables: mean (sd)
+  all_categorical() ~ "{n}/{N} ({p}%)" #for categorical variables: n/N (%)
+)) 
+table1
+
+
+table1_by_diet<- val_study_analysis_ready %>%
+  select(-index_code, -all_of(macro_nuts),-calcium,-iron) %>% 
+  tbl_summary(
+    by=dietary_patterns,
+    missing = "no", 
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",  #
+      all_categorical() ~ "{n}/{N} ({p}%)" 
+    )) 
+table1_by_diet
+```
+
+</details>
+
+::: {dir="rtl"}
+## 5. שילוב across עם mutate
+
+-   נחזור ל-df המקורי. המשימה הבאה שלנו היא להפוך את העמודות עם סיומת y_n ל-logical
+
+-   נעשה זאת קודם כל על משתנה אחד
+
+-   כעת נריץ את הקוד על כל העמודות הרלוונטיות בעזרת across
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+val_study_analysis_check <- val_study_analysis_ready %>% 
+  mutate(smoking_y_n_log = if_else(smoking_y_n=="yes",TRUE,FALSE))
+
+
+val_study_analysis_ready2 <- val_study_analysis_ready %>% 
+  mutate(across(ends_with("_y_n"),
+                .fns=~if_else(.=="yes",TRUE,FALSE)
+  ))
+```
+
+</details>
+
+::: {dir="rtl"}
+## 6. חישובי אחוזונים
+
+-   נכיר את הפקודה quantile לחישוב אחוזונים, נבדוק מה הדיפולט שלה וננסה לשנות אותו
+
+-   נחשב בעזרת quantile את החמישונים עבור צריכת אנרגיה
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#check how to work with the quantile function
+quantile(val_study_analysis_ready$food_energy) 
+quantile(val_study_analysis_ready$food_energy, probs = 0.2)
+quantile(val_study_analysis_ready$food_energy, probs = c(0.2,0.33))
+
+#create a vector for 5 quantiles
+q_5<- seq(0,1,0.2)
+#calculate the quantiles
+quantile(val_study_analysis_ready$food_energy, q_5)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 7. הרצת אחוזונים על הרבה משתנים עם reframe
+
+-   בעזרת פקודת reframe ניצור df עם החישוב של חמישוני צריכת אנרגיה בחלוקה לפי קבוצות גיל. ננסה בהתחלה רק לשים את החישוב ואז נוסיף עוד עמודה עבור ההגדרה של החמישונים עצמם נעגל את התוצאה לספרה אחת אחרי הנקודה
+
+    👈 reframe מאד מאד דומה ל-summarise אבל מתאימה למצבים בהם הפלט של החישוב שלנו הוא יותר מערך אחד (תחשבו על ההבדל בין התוצאה של ממוצע לעומת החישוב שעשינו עכשיו לכמה אחוזונים)
+
+-   ניצור גרף עמודות
+
+-   נשלב across לחישוב של האחוזונים של האנרגיה ונהפוך את החישוב לכזה עבור כל המקרו-נוטריינטים
+
+-   נשנה את המבנה של הטבלה ל-long
+
+-   נכין גרף עמודות לכל הנוטריינטים.
+
+-   נוסיף קוד ששומר את הגרף בתקייה
+
+-   נשנה שוב את המבנה של הטבלה כך שקבוצות הגיל הן העמודות שלנו
+
+-   נכיר את הפקודה relocate להזזת מיקום העמודה macro_nut
+
+-   נייצא כאקסל, נוסיף לשם של האקסל שלנו את התאריך של היום
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+
+#create a df with the quantiles per age_group
+energy_q_per_age<-val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  reframe(energy_q=quantile(food_energy, probs = q_5)
+          ) %>% 
+  ungroup()
+
+#add the quantiles numbers
+energy_q_per_age<- val_study_analysis_ready %>%
+  group_by(age_group) %>% 
+  reframe(quant=as.factor(q_5), #add as factor for later plots
+    energy_q = quantile(food_energy, q_5)
+          ) %>% 
+  mutate(energy_q=round(energy_q,2)) %>% 
+  ungroup()
+
+#bar graph per q
+energy_q_per_age %>%
+  ggplot(aes(x=quant,y=energy_q, fill=age_group))+
+  geom_col(position = "dodge" )+ # I used geom_col instead of geom_bar and than there's no need for stat=identity 
+  labs(title="Energy intake by age group",
+       y="Energy intake (kcal)")+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set2") # set2 is the best!
+
+
+
+#create quantiles across all the macro_nuts
+macro_nuts_q_per_age <- val_study_analysis_ready %>%
+  group_by(age_group) %>% 
+  reframe(quant=as.factor(q_5),
+    across(all_of(macro_nuts), ~quantile(.x, q_5))) %>% 
+  mutate(across(all_of(macro_nuts), ~round(.,1))) %>% 
+  ungroup()
+
+#pivot longer
+macro_nuts_q_per_age_long<- macro_nuts_q_per_age %>%
+  pivot_longer(cols=all_of(macro_nuts), names_to = "macro_nut", values_to = "value") 
+
+#bar graph per q for all macro_nuts
+macro_nuts_q5_p<- macro_nuts_q_per_age_long %>%
+  ggplot(aes(x=quant,y=value, fill=age_group))+
+  geom_col(position = "dodge")+ 
+  labs(title="nut intake by age group",
+       y="nut intake (kcal)")+
+  facet_wrap(~macro_nut, scales = "free")+
+  theme_classic()+
+  scale_fill_brewer(palette = "Set2")
+
+
+#save the plots
+ggsave("output/macro_nuts_q5.png", plot = macro_nuts_q5_p, width = 10, height = 10, units = "cm")
+
+#pivot wider per age group 
+macro_nuts_q5_wide<- macro_nuts_q_per_age_long %>% 
+  pivot_wider(names_from = age_group, values_from = value) %>% 
+  relocate(macro_nut,.before = quant) %>% #this is for changing the order of one column
+  arrange(macro_nut) #changing the order of all the columns
+
+#save excel add date to the file name
+write_xlsx(macro_nuts_q5_wide, paste0("output/macro_nuts_q5_wide_",Sys.Date() ,".xlsx"))
+
+
+
+#display plots
+print(energy_q_plot)
+print(nuts_q_plot)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 8. פונקציות משלכם
+
+-   נבנה פונקציה בשם **fn_height_calc** שמחלצת את הגובה על בסיס המשקל וה-BMI
+-   נבדוק אותה
+-   נריץ את הפונקציה על הדטא שלנו
+-   נבנה פונקציה **fn_med_na_rm** בשם שמשנה את ברירת המחדל של median כדי שתמיד תסיר ערכים ריקים וגם תעגל לספרה אחת אחרי הנקודה
+-   נבדוק אותה
+-   נריץ אותה על כל ה-macro_nuts
+-   נבנה פונקציה בשם **fn_y_n_to_logic** להמרה של yes ו-no למשתנה logical
+-   נריץ אותה על כל המשתני y_n
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#build a function to calculate the height from wight and bmi
+fn_height_calc<- function(weight, bmi){
+  height <- sqrt(weight/bmi)
+  return(height)
+}
+
+
+#test the function
+fn_height_calc(70, 25)
+fn_height_calc(val_study_analysis_ready$weight[2], val_study_analysis_ready$bmi[2])
+
+#apply the function to the data
+val_study_analysis_ready <- val_study_analysis_ready %>% 
+  mutate(height = fn_height_calc(weight, bmi))
+
+#Build a function that change the default for na.rm to TRUE + round the result
+fn_med_na_rm <- function(x){
+ med<- median(x, na.rm = TRUE) #calculate the median with na.rm = TRUE
+ return(round(med,1)) #round the result
+}
+
+#test the function
+fn_med_na_rm(val_study_analysis_ready$food_energy)
+
+#use the function on the data
+median_macro_nuts2 <- val_study_analysis_ready %>% 
+  group_by(age_group) %>% 
+  summarise(
+    across(.cols=all_of(macro_nuts),
+           .fns=~fn_med_na_rm(.),
+           .names = "{col}_median"
+    )) %>% 
+  ungroup() 
+
+
+#let's build a function that convert yes no to logical
+fn_y_n_to_logic<- function(x){
+  return(if_else(x=="yes",TRUE,FALSE))
+}
+#test the function
+fn_y_n_to_logic("yes")
+fn_y_n_to_logic("no")
+
+val_study_analysis_ready2 <- val_study_analysis_ready %>% 
+  mutate(across(ends_with("_y_n"),
+                .fns=~fn_y_n_to_logic(.)
+  ))
+```
+
+</details>
+
+::: {dir="rtl"}
+## 9. Rowwise
+
+אתם מעוניינים ליצור משתנה שסוכם את הצריכה של פחמימות, שומן וחלבון של כל משתתף בנפרד.
+
+-   נסו בעזרת mutate להשתמש בפונקציית sum. התוצאה לא תקינה...
+
+-   כעת הוסיפו rowwise לפני כן. הוסיפו בסוף גם ungroup
+
+-   ניתן גם לחשב סכום ידנית.
+
+-   טריק: איך לחשב את הסכום של כל הנוטריינטים בוקטור macro_nuts?
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#calculate sum of macro nutrients
+val_study_analysis_ready3<-val_study_analysis_ready2 %>% 
+  mutate(sum_macro=sum(protein, total_fat, carbohydrates))
+
+#using rowwise will give the results per participant (what we wanted)
+val_study_analysis_ready3<-val_study_analysis_ready2 %>% 
+  rowwise() %>% 
+  mutate(sum_macro1=sum(protein, total_fat, carbohydrates)) %>% 
+  ungroup() 
+  #we can do it also manually without rowwise:
+  val_study_analysis_ready3<-val_study_analysis_ready3 %>%
+mutate(
+  sum_macro2=protein + total_fat + carbohydrates) 
+
+#using c_across to sum all macro nutrients in the vector
+val_study_analysis_ready3 <- val_study_analysis_ready3 %>%
+ rowwise() %>%
+  mutate(sum_all_macro_vector=sum(c_across(all_of(macro_nuts)))) %>% 
+  ungroup()
+```

@@ -1,0 +1,24 @@
+project:
+  type: book
+
+execute:
+  freeze: false
+
+book:
+  title: "R"
+  author: "Kerem Avital"
+  chapters:
+    - index.qmd
+    - part: "practice"
+      chapters:
+        - chapters/practice_1_25_26.qmd
+        - chapters/practice_2_25_26.qmd
+        - chapters/practice_3_25_26.qmd
+
+format:
+  html:
+    toc: true
+    css: chapters/style_heb.css
+    theme: cosmo
+    number-sections: false
+    anchor-links: false

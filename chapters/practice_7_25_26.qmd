@@ -1,0 +1,314 @@
+---
+title: "תרגיל 7 - הסקה סטטיסטית"
+author: כרם אביטל
+execute:
+  eval: false
+output:
+  html_document:
+    css: style_chap.css
+    code-overflow: wrap
+    code-fold: true
+---
+
+::: {dir="rtl"}
+## 1.להתכונן
+
+-   היום נתאמן בלעבוד עם קבצי RMD. אנחנו רוצים שתעבדו איתם במבחן. אז תורידו קובץ targil_7_temp.rmd שנמצא במודל
+
+-   להעלות את ספריות ***tidyverse*** ו-**gtsummary**
+
+-   נעבוד עם נתוני **trial** שנמצאים בתוך חבילת **gtsummary** נטען אותם כאובייקט בשם **trial_df** ונסתכל עליהם קצת. הנתונים הם עבור טיפול בתרופות שונות עבור חולי סרטן.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+library(tidyverse) 
+library(gtsummary)
+
+#load the data trial from gtsummary
+trial_df<- trial
+
+glimpse(trial_df)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 2. מבחן T
+
+-   נבצע מבחן t פשוט - **t.test()** על המשתנה הרציף **marker** מול המשתנה הפקטורילי **trt**
+
+-   נבדוק מה קורה אם אנחנו הופכים את הסדר של המשתנים (הודעת שגיאה).
+
+-   נבצע את אותו מבחן הפעם נשתמש בארגומנט =**data** וגם נשמור את התוצאה בשם **marker_ttest_results**\
+    נוציא מתוך האובייקט שיצרנו נתונים שונים
+
+-   נתקין ונטען את חבילת **broom** עבור הפקודה (המאד שימושית) **tidy**, ונריץ אותה על **marker_ttest_results**
+
+-   ננסה לבדוק את ההבדלים במשתנה **ttdeath** בין **trt**. התוצאה לא מובהקת אבל גם לא כלכך רחוקה
+
+-   כעת ננסה להריץ את המבחן שוב אבל רק עבור נבדקים ב-**stage**=T4. תחילה נעשה את זה בגישת base R (כה מעיק!😿) נשמור את התוצאה בשם **ttdeath_ttest_t4_a**
+
+    👈 **זה הזמן להכיר את חבילת rstatix!** שזו חבילה שמאפשרת ביצוע מבחנים סטטיסטיים בגישת tidyverse.
+
+-   נשתמש בפקודת **t_test** בשילוב עם **pipe** נשמור את התוצאה תחת **ttdeath_ttest_t4_b** (ה-PV שנקבל יהיה זהה לזה ממקודם) התוצאה מתקבלת כבר בפורמט tidy נוח.
+
+-   אפשר גם להשתמש ב-**group_by** כדי להריץ בבת אחת מבחנים על כל ה-**stages**
+
+-   נמחק את כל האובייקטים למעט **trial_df**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+#T TEST
+
+#run some basic t.test
+t.test(trial_df$marker ~ trial_df$trt)
+
+#test what happens if we switch the order of the variables - it will throw an error
+t.test(trial_df$trt ~ trial_df$marker)
+
+# we can also add the data argument
+t.test(marker ~ trt, data=trial_df)
+
+#save the result as an object
+marker_ttest_results<- t.test(marker ~ trt, data=trial_df)
+
+marker_ttest_results
+
+marker_ttest_results$p.value
+marker_ttest_results$method
+
+#load broom 
+#install.packages("broom")
+library(broom)
+
+marker_ttest_results_tidy<- tidy(marker_ttest_results) #this will give us a nice df
+
+
+#check the ttdeath per trt 
+t.test(trial_df$ttdeath ~ trial_df$trt)
+
+#check the ttdeath per trt but only for stage T4 - this is very tedious
+ttdeath_ttest_t4_a <- t.test(trial_df$ttdeath[trial_df$stage=="T4"] ~ trial_df$trt[trial_df$stage=="T4"])
+
+
+#time for shortcuts...
+#install.packages("rstatix")
+library(rstatix)
+
+
+#t test with tidyverse approach 
+ttdeath_ttest_t4_b<- trial_df %>%
+  filter(stage=="T4") %>%
+  t_test(ttdeath ~ trt)
+
+#we can also use group_by
+ttdeath_ttest_per_stage<- trial_df %>%
+  group_by(stage) %>%
+  t_test(ttdeath ~ trt)
+
+ttdeath_ttest_per_stage
+
+rm(list=setdiff(ls(),"trial_df"))
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. מבחן חי בריבוע
+
+-   ניצור משתנה דיכוטומי בשם **survived_1year** עבור משתתפים ששרדו שנה או יותר
+
+-   נבצע מבחן חי **chisq.test()** בין המשתנה החדש מול משתנה **trt**. ונשמור בשם **chi_test_survived1**.
+
+    -   נוציא מתוך האובייקט שיצרנו את הערך של **p.value**.
+    -   נריץ גם tidy() על האובייקט
+
+-   נבנה טבלת שכיחויות פשוטה בעזרת פקודת **table** ונשמור בשם **survived_vs_trt**
+
+-   נבצע מבחן chi על הטבלה **survived_vs_trt** ונשמור בשם **chi_test_survived2**
+
+-   נשווה בין **chi_test_survived1** ל-**chi_test_survived2** (התוצאות אמורות לצאת זהות)
+
+-   נתנסה בלהריץ מבחן חי בריבוע עם שלוש קטגוריות: השוואה בשרידה יותר משנה עבור **grades** שונים
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+##CHI TEST
+
+trial_df2<- trial_df %>% 
+  mutate(survived_1year=if_else(ttdeath>=12,TRUE,FALSE))
+
+chi_test_survived_trt<- chisq.test(trial_df2$survived_1year, trial_df2$trt)
+chi_test_survived_trt
+chi_test_survived_trt$p.value
+tidy(chi_test_survived_trt) %>% view()
+
+#create a frequency table
+survived_vs_trt<- table(trial_df2$survived_1year, trial_df2$trt)
+survived_vs_trt
+
+#do chi test on the freq table
+chi_test_survived_trt2<-chisq.test(survived_vs_trt) #will produce the same results
+chi_test_survived_trt2$p.value
+
+# chi square test with more than 2 categories
+chi_test_survived_grade<- chisq.test(trial_df2$survived_1year, trial_df2$grade)
+chi_test_survived_grade
+
+rm(list=setdiff(ls(),"trial_df2"))
+```
+
+</details>
+
+::: {dir="rtl"}
+## 4. ועכשיו עם gtsummary
+
+-   נריץ **tbl_summary()** על הנתונים שלנו
+
+-   בדומה לתרגיל הקודם נוסיף מספר ארגומנטים לפונקציית-**tbl_summary** ונשמור כאובייקט בשם **summary_table**:
+
+    -   **by** בשביל החלוקה לקבוצות **trt**
+
+    -   **missing="no"** בשביל להוריד ערכים ריקים
+
+    -   **statistic** בשביל להגדיר אלו מדדים ושכיחויות להציג ובאיזה פורמט
+
+-   נוסיף pipe ואז את הפונקציה **modify_caption** כדי להגדיר כותרת לגרף
+
+-   נוסיף עוד pipe הפעם עבור הפונקציה **add_p** כדי להוסיף מבחן סטטיסטי שמשווה בין הקבוצות
+
+-   נגדיר בתוך **add_p** שעל כל המשתנים הרציפים נריץ **t.test** (הדיפולט של החבילה הוא מבחן א-פרמטרי)
+
+    👈שימו לב שהשמות בטבלה נוחים לקריאה ושונים לגמרי מהשמות שיש ב-df עצמו. יש שיטה להגדיר תגים לשמות המשתנים בעזרת חבילה שנקראת labelled וגם אפשר לעשות את זה ישירות בעזרת **gtsummary** - מחוץ ל-scope של הקורס הזה.
+
+-   נריץ שוב את הקוד של **gtsummary** ונשמור כאובייקט בשם **sum_table** נוסיף לסוף הקוד של בניית הטבלה את הפקודה **as_gt()** שתסייע לנו ליצוא של הטבלה
+
+-   נשתמש בפקודת השמירה מתוך חבילת **gt** **gt::gtsave()** ונשמור כאובייקט **html** ואז כאובייקט **docx**.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+ 
+#Basic summary table with gtsummary
+trial_df2 %>% 
+  tbl_summary()
+
+#add spliting by treatment
+trial_df2 %>% 
+  tbl_summary(by=trt) #split by trt
+
+
+summary_table <- trial_df2 %>%  #save as an object
+  tbl_summary(
+    by=trt, 
+    missing = "no", # hide missing data
+    statistic = list( #argument for the statistic showed on the table
+      all_continuous() ~ "{mean} ({sd})",  #for numeric variables: mean (sd)
+      all_categorical() ~ "{n}({p}%)" #for categorical variables: n (%) 
+    )) 
+
+summary_table
+
+#some more customization
+summary_table<-summary_table %>% 
+  modify_caption("Summary of the trial data") %>% #change the title
+  add_p(
+    test = all_continuous() ~ "t.test",  #change the test (default is nonparametric)
+  ) 
+summary_table
+
+summary_table <- summary_table %>% 
+  as_gt() #this change nothing in what we see but it will be useful for saving the table
+
+#export the table as html looks better but it is not editable
+gt::gtsave(summary_table,"output/summary_table.html")
+
+#export the table as docx - this is editable but remove some of the formatting (but keeps getting better)
+gt::gtsave(summary_table,"output/summary_table.docx")
+```
+
+</details>
+
+::: {dir="rtl"}
+## 5. מתאם (קורלציה)
+
+1.  ניצור גרף **ggplot** מהיר לבדיקה ויזואלית של הקשר בין המשתנים **ttdeath** ו-**marker**
+
+2.  בעזרת פקודת **cor.test()** נבצע בדיקת **קורלציה** בין המשתנים **marker** ו-**ttdeath** ונשמור בשם **t_death_marker_cor**
+
+3.  נתנסה בלהוציא ערכים מתוך **t_death_marker_cor**
+
+4.  נשנה את סוג המבחן ל-**spearman**
+
+5.  נעזר שוב בחבילת **rstatix** ונשתמש בפקודה **cor_test** בשביל לבחון את הקורלציות בחלוקה לקבוצות.
+
+6.  ניצור שוב גרף הפעם בחלוקה לקבוצות ונשמור אותו בשם **ttdeath_age_per_trt_plot**
+
+7.  בעזרת חבילת **ggpubr** נתנסה בהוספת **stat_cor()** לגרפים שיצרנו\
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+## correlations
+
+#quick vizualizaion the correlation between ttdeath and marker
+trial_df2 %>% 
+  ggplot(aes(x=ttdeath,y=marker))+
+  geom_point()+
+  geom_smooth(method = lm)
+
+#correlation test
+t_death_marker_cor<- cor.test(trial_df2$marker, trial_df2$ttdeath)
+#extract the p value
+t_death_marker_cor$p.value
+#extract the correlation (R2)
+t_death_marker_cor$estimate
+
+#Spearman correlation test (will throw a warning but that's ok)
+t_death_marker_cor_spearman<- cor.test(trial_df2$marker, trial_df2$ttdeath, method = "spearman")
+t_death_marker_cor_spearman
+
+# test per trt group with rstatix
+ttdeath_age_cor_per_trt<- trial_df2 %>% 
+  group_by(trt) %>%
+  cor_test(marker, ttdeath)
+
+view(ttdeath_age_cor_per_trt)
+
+#vizualizaion the correlation between ttdeath and marker per trt
+ttdeath_age_per_trt_plot<- trial_df2 %>% 
+  ggplot(aes(x=ttdeath,y=marker))+
+  geom_point()+
+  geom_smooth(method = lm)+
+  facet_wrap(.~trt)
+
+ttdeath_age_per_trt_plot
+
+#load ggpubr for the stat_cor function
+library(ggpubr)
+
+#add the correlation values to the plot
+ttdeath_age_per_trt_plot +
+  stat_cor(method = "pearson") 
+```
+
+</details>

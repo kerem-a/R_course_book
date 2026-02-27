@@ -1,0 +1,61 @@
+details summary {
+  background-color: #e3b1a2;
+  padding: 5px;
+  cursor: pointer;
+  direction:ltr;
+}
+
+/* Custom styles for the hidden content */
+details {
+    margin-bottom: 3em;
+}
+
+
+body {
+	direction:rtl;
+}
+
+pre.r {
+    direction: ltr;
+}
+
+
+pre code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+section, .white-bg {
+    background-color: #ffffff !important;
+    padding: 2em !important;
+}
+
+
+body {
+    background-color: #fff4f4;
+}
+
+a.anchorjs-link {
+    display: none;
+}
+
+
+.nav-page.nav-page-previous .bi-arrow-left-short,
+.nav-page.nav-page-next .bi-arrow-right-short {
+    transform: scaleX(-1);
+}
+
+ul#quarto-sidebar-section-1{
+padding-right: 0.5em !important;
+}
+
+
+ul.list-unstyled.mt-1 {}
+
+.sidebar-menu-container ul.list-unstyled.mt-1 {
+    padding-inline-start: 0;
+}
+
+li.sidebar-item {
+    font-size: 0.9em !important;
+}

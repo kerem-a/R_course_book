@@ -1,0 +1,254 @@
+---
+title: "תרגיל 3 - Tidyverse ועוד"
+author: כרם אביטל
+execute:
+  eval: false
+output:
+  html_document:
+    css: style_chap.css
+    code-overflow: wrap
+    code-fold: true
+---
+
+```{r  message=FALSE, warning=FALSE, include=FALSE}
+
+library(emo)
+
+```
+
+::: {dir="rtl"}
+## 1. להתכונן
+
+-   לטעון את החבילות tidyverse ו-readxl.
+
+-   להוריד מהמודל קובץ זיפ ***babies_length_weight.zip***\
+    לעשות extract לשני קבצי האקסל שבפנים- ***babies_length*** ו-***babies_weight***,\
+    ואז להעלות את שניהם ל-R.
+
+-   נתבונן בקבצים.
+
+-   **המטרה שלנו בתרגיל הזה תהיה לאחד את הקבצים, לסדר אותם ולהכין אותם לאנליזות ויצירה של גרפים** (בתרגילים הבאים).
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+library(readxl)
+library(tidyverse)
+
+#imports
+babies_weight<-  read_excel("data/babies_weight.xlsx")
+babies_length<-  read_excel("data/babies_length.xlsx")
+
+#check out babies_weight
+glimpse(babies_weight)
+head(babies_weight)
+colnames(babies_weight)
+
+#check out babies_length
+glimpse(babies_length)
+head(babies_length)
+colnames(babies_length)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 2. נסדר את השמות של השדות
+
+ניצור df בשם **baby_weight_clean** ונשנה את השם של השדה number ל-id בעזרת הפונקציה **rename**.
+
+נתקין את החבילה **janitor** ונטען אותה
+
+בעזרת הפקודה **clean_names** נסדר את השמות בכל ה-df לפורמט אחיד ונוח לעבודה.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#rename the index name
+babies_weight_clean <- babies_weight %>% 
+  rename(id=number)
+
+#install.packages("janitor")
+library(janitor)
+
+# unite the format of the colnames 
+babies_weight_clean <-babies_weight_clean %>% 
+  clean_names()
+
+babies_length_clean <- babies_length %>% 
+  clean_names()
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. יצירת משתנה בתנאי
+
+ניצור משתנה חדש בשם **preterm** שמוגדר כ-TRUE עבור ילדים שנולדו בשבוע 37 ומטה.
+
+ננסה לבדוק כמה ילדים הם פגים
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+babies_weight_clean2<- babies_weight_clean %>%
+  mutate(preterm=if_else(birth_week<38,"yes","no")) %>% #create categorical variable
+  mutate(preterm2=if_else(birth_week<38,TRUE,FALSE)) %>% #create logical variable
+  mutate(preterm3=birth_week<38) #create logical variable (shorter way)
+
+table(babies_weight_clean2$preterm)
+sum(babies_weight_clean2$preterm2)
+
+
+```
+
+</details>
+
+::: {dir="rtl"}
+## 4. פונקציית case_when
+
+נבדוק כמה לידות היו עם **Abnormality** בכמה דרכים.
+
+ניצור df בשם **baby_weight_week_stage** וניצור משתנה בשם **week_stage** עם חמש קטגוריות על בסיס שבוע לידה.
+
+-   Extremely preterm - less than week 28
+
+-   Very preterm - 28-31
+
+-   Moderate or late preterm 32-37
+
+-   Normal - 38-42
+
+-   Postterm - more than 42
+
+נבדוק כמה לידות הן בכל קטגוריה בעזרת פוקנציית table
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#check how many are with abnormality
+length(babies_weight_clean$abnormality[babies_weight_clean$abnormality==TRUE])
+sum(babies_weight_clean$abnormality)
+table(babies_weight_clean$abnormality)
+
+#create catgories for week stage
+baby_weight_week_stage <-babies_weight_clean %>% 
+  mutate(week_stage = case_when(
+    birth_week<28 ~ "Extremely preterm",
+    birth_week>=28 & birth_week<32 ~ "Very preterm",
+    birth_week>=32 & birth_week<37 ~ "Moderate or late preterm",
+    birth_week>=37 & birth_week<=42 ~ "Normal",
+    birth_week>42 ~ "Postterm",
+    
+  ))
+
+table(baby_weight_week_stage$week_stage) %>% view()
+```
+
+</details>
+
+::: {dir="rtl"}
+## 5. filter ו-select
+
+ב- **babies_weight_clean**
+
+-   נוציא את כל התינוקות שהם ***Extremely preterm*** או ***Postterm*** ושיש להם ***abnormalities***.
+-   נוציא את הילדים שאין לגביהם מידע על ***gender.***
+-   נוריד את השדות ***abnormality*** ו- ***name***.
+-   נקרא ל-df בשם ***babies_weight_join_ready***.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#filter out exclusion createra
+babies_weight_join_ready<- baby_weight_week_stage %>% 
+  filter(  abnormality ==FALSE &
+             !is.na(gender)) %>% 
+   filter(week_stage !="Extremely preterm" & week_stage !="Postterm") %>% 
+  #another option
+  # filter(birth_week>28 & birth_week<43 ) %>% 
+  select(-name,-abnormality)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 6. איחוד המשקל והגובה ל-df אחד
+
+-   ראשית ננסה לאחד בעזרת ***left_join*** את ***babies_length*** עם ***babies_weight_join_ready*** שיצרנו בסעיף הקודם על בסיס השדה ***id***
+
+-   נקרא ל-DFהחדש ***weight_length_babies***.
+
+-   מה הבעיות ב-DF שיצרנו?
+
+-   ניצור df בשם ***babies_length_join_ready*** שכולל רק את העמודות ***id*** והעמודות של ה-***length*** (ננסה לעשות את זה בכמה גישות).
+
+    👈 כדאי להיעזר כשאפשר ב- **Tidyselect** זה מאד מאד נוח ויש הסברים טובים בעזרה של פונקציית select.
+
+-   עכשיו נאחד מחדש את שני הdf שלנו ונקרא לו **weight_length_babies**.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+
+# trying to join
+weight_length_babies <- babies_weight_join_ready %>% 
+  left_join(babies_length_clean, by="id")
+
+# create a join ready length df
+babies_length_join_ready<-babies_length_clean %>% 
+  select(id, length_3, length_6,length_9,length_12)
+# a bit shorter
+babies_length_join_ready<-babies_length_clean %>% 
+  select(id, length_3:length_12)
+
+#The best way IMO
+babies_length_join_ready<-babies_length_clean %>% 
+  select(id, starts_with("length") )
+
+#Join again 
+weight_length_babies <- babies_weight_join_ready %>% 
+  left_join(babies_length_join_ready, by="id")
+```
+
+</details>
+
+::: {dir="rtl"}
+## 7. שמירה כאקסל
+
+נתקין את חבילת **writexl** ונטען אותה.
+
+-   נשמור את הDF שיצרנו כקובץ אקסל בתקיית output
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#write excel file
+# install.packages("writexl")
+library(writexl)
+write_xlsx(weight_length_babies,"output/weight_length_babies.xlsx")
+```
+
+</details>
+

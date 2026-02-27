@@ -1,0 +1,460 @@
+---
+title: "תרגיל 4 - גרפים (ggplot) ועוד tidyverse"
+author: כרם אביטל
+execute:
+  eval: false
+output:
+  html_document:
+    css: style_chap.css
+    code-overflow: wrap
+    code-fold: true
+---
+
+::: {dir="rtl"}
+## 1.להתכונן
+
+-   להעלות את ספריות ***tidyverse*** ו-***readexl***
+
+-   להעלות את הקובץ weight_length_babies.xlsx שיצרנו בתרגיל הקודם ויצאנו מ-R, שימו לב להעביר אותו מתקיית output ל-data (אם אין לכם אותו ניתן גם להוריד אותו מהמודל)
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+
+library(readxl)
+library(tidyverse) 
+
+weight_length_babies<-  read_excel("data/weight_length_babies.xlsx")
+```
+
+</details>
+
+::: {dir="rtl"}
+## 2. Group and summarise
+
+-   נחשב את המשקל ה**ממוצע והחציון** בחודש השלישי נקבל NA
+
+-   ננסה לחשב ממוצע וחציון עבור החודש השישי (יעבוד בלי בעיה)
+
+-   נוסיף **na.rm=TRUE** לחישוב הממוצע והחציון בחודש השלישי
+
+-   בעזרת פקודת **summarise** ניצור DF קטן שמכיל את הממוצע והחציון לחודש השלישי
+
+-   כעת נוסיף גם **group_by**() על מנת לפצל את החישוב לבנים ובנות בנפרד בעזרת ***summarise()***. נשמור אותו בשם w3_per_gender
+
+-   נחשב את הגובה הממוצע והחציון בחודש השלישי לבנים ובנות בנפרד ולפי קטגוריות של ***birth_stage*** בנפרד - נשמור את התוצאה כ-DF נפרד בשם w3_per_gender_stage
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#simple mean and median calculation
+mean(weight_length_babies$weight_3) #will give you NA
+median(weight_length_babies$weight_3) #will give you NA
+
+mean(weight_length_babies$weight_6) 
+median(weight_length_babies$weight_6) 
+
+mean(weight_length_babies$weight_3,na.rm=TRUE) 
+median(weight_length_babies$weight_3, na.rm=TRUE) 
+
+weight_length_babies %>% 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+#mean and median per gender
+w3_per_gender<- weight_length_babies %>% 
+  group_by(gender) %>% 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+#mean and median per gender and week stage
+w3_per_gender_stage<- weight_length_babies %>% 
+  group_by(gender, week_stage) %>% 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+view(w3_per_gender_stage)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. היסטוגרמות - geom_histogram
+
+-   ניצור היסטוגרמה עבור weight_3. תחילה עם base R כדי להזכר, ואז עם **ggplot**
+
+-   נוסיף את הארגומנט **bins=15**
+
+-   נשנה את הארגומנט **bins** ל-50 בנוסף נשנה את הצבע של העמודות ונוסיף שקיפות עם alpha.
+
+    👈 אפשר לראות איזה שמות של צבעים R מקבל, בעזרת הפקודה colors() או פשוט לחפש בגוגל R base colors
+
+-   נפצל את ההיסטוגרמה לפי צבעים עבור בנים ובנות
+
+-   נשמור את הגרף כאובייקט בשם **birth_week_hist**
+
+-   נוסיף לאובייקט ששמרנו את הכותרת: *Three Months Weight Distribution* ונוסיף כותרות ברורות יותר לצירים. נוסיף גם שכבה של ***theme_light().***
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#base R histogram
+hist(weight_length_babies$weight_3) 
+
+#ggplot basic histogram
+weight_length_babies %>%
+  ggplot(aes(x=weight_3))+
+  geom_histogram()
+
+#change the bins
+weight_length_babies %>%
+  ggplot(aes(x=weight_3))+
+  geom_histogram(bins=15)
+
+#add some color
+weight_length_babies %>%
+  ggplot(aes(x=weight_3))+
+  geom_histogram(bins=50, fill="pink",color="purple",alpha=0.7) #change some color
+ 
+
+#split the histogram based on gender and give it a name
+weight_3_hist<- weight_length_babies %>%
+  ggplot(aes(x=weight_3,fill=gender))+ #add split based on gender
+  geom_histogram(bins=50,alpha=0.7) 
+
+#check
+weight_3_hist
+
+#add more stuff (layers) to the histogram
+weight_3_hist +
+theme_light()+ # change the theme
+  labs(title= "Three Months Weight Distribution", x="weight (kg)", y="Count") #add titles
+  
+```
+
+</details>
+
+::: {dir="rtl"}
+## 4. גרף עמודות - geom_bar
+
+כעת אנחנו רוצים ליצור גרף עמודות שמשווה בין בנים לבנות את המשקל הממוצע בגיל שלושה חודשים
+
+-   ננסה להשתמש בפקודת geom_col() על ה-DF weight_length_babies מה הבעיה במה שקיבלנו?
+-   על מנת ליצור את הגרף כמו שצריך נשתמש ב-df שיצרנו בתחילת השיעור: w3_per_gender
+-   כעת ניצור את הגרף המבוקש.
+-   נפריד את הצבעים על בסיס מין.
+-   אנחנו נחזור בהמשך לגרפים יותר מורכבים מהסוג הזה.
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+weight_length_babies %>% 
+  ggplot(aes(x=gender,y=weight_3))+
+  geom_col()
+
+
+#calc the mean weight_3 per gender
+#basic bar plot
+w3_per_gender %>% 
+  ggplot(aes(x=gender,y=mean_w3))+
+  geom_col()
+
+# add color based on gender
+weight_3m_mean %>% 
+  ggplot(aes(x=gender,y=mean_w3, fill=gender))+
+  geom_col()
+```
+
+</details>
+
+::: {dir="rtl"}
+## 5. גרף נקודות (scatter) - geom_point
+
+ניצור גרף נקודות שבוחן את היחס בין המשקל לגובה בתינוקות בגיל שנה
+
+-   ראשית ניצור את הגרף בעזרת Rbase
+-   חפשו בגוגל את הביטוי "***ggplot scatter plot***" ופתחו את האתר **STHDA** (הכותרת של העמוד היא: *ggplot2 scatter plots : Quick start guide - Data Visualization*).
+-   העתיקו מהאתר את הגרף הבסיסי ונסו לשנות את הקוד שלו כדי שיתאים ל-DF שלנו.
+-   בדקו איך הגרף נראה אם מורידים את ההגדרות של ה-size וה-shape
+-   הפרידו את הצבעים של הבנים מהבנות שנו את הגודל של הנקודות
+-   שמרו את הגרף כאובייקט בשם ***one_year_scatterplot***.
+-   הוסיפו לגרף שכבה ***theme_classic()*** והוסיפו את הכותרת: "***Weight to length*** ***separated by gender***"
+-   הוסיפו ***facet_wrap*** כדי להפריד בין הגרף לפי לפי ה-week_stage וקראו לגרף **Weight to length separated by gender and preterm categories**.
+-   נשמור את הגרף שיצרנו כקובץ jpg
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#R base plot
+plot(weight_length_babies$weight_12,weight_length_babies$length_12)
+
+#Scatter plot from STHDA
+ggplot(weight_length_babies, aes(x=weight_12, y=length_12)) +
+  geom_point(size=2, shape=23)
+
+#default scatter plot
+ggplot(weight_length_babies, aes(x=weight_12, y=length_12)) +
+  geom_point()
+
+#add gender
+one_year_scatterplot<- ggplot(weight_length_babies, aes(x=weight_12, y=length_12, color=gender)) +
+  geom_point(size=1)
+
+#check
+one_year_scatterplot
+
+#Some graphical changes  
+one_year_scatterplot<- one_year_scatterplot +
+  theme_classic()+
+  labs(title="Weight to length separated by gender" )
+
+one_year_scatterplot
+
+#split based on week_stage
+one_year_scatterplot+
+  facet_wrap(.~week_stage)+
+  labs(title = "Weight to length separated by gender and preterm categories")
+
+ggsave("output/one_year_scatterplot.jpg", one_year_scatterplot)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 6. המרה לפורמט ארוך - pivot_longer
+
+-   נניח שאנחנו רוצים ליצור גרף גדילה בגובה לאורך זמן בבנים ובנות? בפורמט הנוכחי של ה-DF שלנו זה לא אפשרי. נראה איך עושים את זה.
+
+-   ניצור df נפרד עבור הגובה (דומה למה שהתחלנו איתו בתרגול לפני שבועיים)
+
+-   נתנסה בהמרה לפורמט ארוך בעזרת פקודת pivot_longer. נקרא ל-DF החדש **babies_length_long**
+
+-   נוסיף את הארגומנט **names_prefix** על מנת להוריד את התחילית מהשדה **month**
+
+-   ניצור את **babies_length_long** שוב אבל הפעם נוסיף גם את המשתנה gender
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+
+baby_length <- weight_length_babies %>% 
+  select(id, starts_with("length") )
+  
+#create long df for babies length
+babies_length_long<- baby_length %>% 
+  pivot_longer(cols = -id,
+               names_to = "month",
+               values_to = "length"
+              )
+              
+#create long df for babies length and remove prefix
+babies_length_long<- baby_length %>% 
+  pivot_longer(cols = -id,
+               names_to = "month",
+               values_to = "length",
+               names_prefix = "length_"
+              )
+              
+baby_length <- weight_length_babies %>% 
+  select(id, gender, starts_with("length") )
+
+#create long df for babies length and remove prefix
+babies_length_long<- baby_length %>% 
+  pivot_longer(cols = c(-id,-gender),
+               names_to = "month",
+               values_to = "length",
+               names_prefix = "length_"
+              )
+  
+```
+
+</details>
+
+::: {dir="rtl"}
+## 7. חזרה לפורמט רחב - pivot_wider
+
+-   נתנסה בלהעביר את **babies_length_long** חזרה לפורמט רחב
+
+-   נוסיף גם כאן את הארגומנט **names_prefix** הפעם כדי **להוסיף** אותו כתחילית לשם השדה
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+#go back with pivot wider
+babies_length_wide <- babies_length_long %>% 
+  pivot_wider(names_from = month,
+              values_from = length
+             )
+
+
+babies_length_wide <- babies_length_long %>% 
+  pivot_wider(names_from = month,
+              values_from = length,
+              names_prefix = "length_")
+```
+
+</details>
+
+::: {dir="rtl"}
+## 8. ניצור גרף עמודות עבור המשקל לאורך זמן
+
+-   נחשב את ממוצע גובה לאורך חודשים ובנפרד לבנים ובנות
+
+-   נשתמש ב-DF שיצרנו על מנת ליצור גרף עמודות פשוט
+
+-   נהפוך את השדה של **month** ל-**numeric** על מנת לתקן את הסדר של העמודות
+
+-   נפצל לבנים ובנות ונוסיף מניפולציה קטנה של **scale_x_continuous** כדי לסדר את החודשים
+
+-   נתנסה בהצגה של העמודות של הבנים והבנות בצמידות עם **fill=gender** במקום כגרפים נפרדים - הגרף לא הגיוני🤨
+
+-   נוסיף **position = "dodge"** כדי לסדר את מיקום העמודות
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#summarize the data per gender and month
+length_summary<- babies_length_long %>% 
+  group_by(gender, month) %>% 
+  summarise(mean_length=mean(length)
+  )
+
+# simple bar plot
+length_summary %>% 
+  ggplot(aes(x=month, y=mean_length))+
+  geom_bar(stat="identity")
+
+# Change the month to numeric
+length_summary<- length_summary %>% 
+  mutate(month=as.numeric(month))
+
+# simple bar plot again
+length_summary %>% 
+  ggplot(aes(x=month, y=mean_length))+
+  geom_bar(stat="identity")
+
+# Change some stuff
+length_summary %>% 
+  ggplot(aes(x=month, y=mean_length))+
+  geom_bar(stat="identity")+
+  facet_wrap(.~gender)+ # split by gender
+  labs(title = "Mean weight per month", x="Month", y="Mean weight")+ 
+  theme_minimal()+
+  scale_x_continuous(breaks = seq(0, 12, by = 3)) # Change the x axis scale
+  
+# add fill=gender instead of facet_wrap
+length_summary %>% 
+  ggplot(aes(x=month, y=mean_length, fill=gender))+
+  geom_bar(stat="identity")+
+  labs(title = "Mean length per month", x="Month", y="Mean length (cm)")+ 
+  theme_minimal()+
+  scale_x_continuous(breaks = seq(0, 12, by = 3)) 
+
+#Change the position of the bars
+length_summary %>% 
+  ggplot(aes(x=month, y=mean_length, fill=gender))+
+  geom_bar(stat="identity", position = "dodge")+  # Change the position of the bars
+  labs(title = "Mean weight per month", x="Month", y="Mean weight")+ 
+  theme_minimal()+
+  scale_x_continuous(breaks = seq(0, 12, by = 3)) 
+```
+
+</details>
+
+::: {dir="rtl"}
+## 9. בונוס: ואם רוצים ליצור df ארוך שמכיל גם גובה וגם משקל וגם את כל יתר השדות?
+
+-   ניצור df נפרד ל- **baby_weight** עם כל השדות הנוספים (למעט מגדר)
+
+-   נחבר את שני ה-DFs בחזרה בפורמט החדש בשם **babies_weight_length_long**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+#separate weight df
+baby_weight <- weight_length_babies %>% 
+  select(id,birth_week,week_stage,starts_with("weight") )
+
+
+#create long df for baby_weight
+babies_weight_long<- baby_weight %>% 
+  pivot_longer(cols = starts_with("weight"),
+               names_to = "month",
+               values_to = "weight",
+               names_prefix = "weight_")
+
+#create long df for baby_weight and remove prefix
+babies_weight_long<- baby_weight %>% 
+  pivot_longer(cols = starts_with("weight"),
+               names_to = "month",
+               values_to = "weight",
+               names_prefix = "weight_")
+
+
+#rejoin weight and length
+babies_weight_length_long<- babies_weight_long %>% 
+  left_join(babies_length_long, by = c("id", "month"))
+```
+
+</details>
+
+::: {dir="rtl"}
+## 10. אפשר גם לעשות את זה בצעד אחד - complex pivoting
+
+-   עקרונית אפשר גם לעבוד ישירות עם ה-DF המקורי - baby_weight_length ולהמיר אותו לפורמט ארוך בעזרת הקוד להלן
+
+-   אפשר שהשדות זהים במבנה שלהם בעזרת פקודה מתוך janitor\
+    compare_df_cols
+
+    👈 בתחילת הדרך שלכם עם R אני פחות ממליצה על השיטה הזו אם כי יכול להיות שבעזרת כלי AI כאלה ואחרים תצליחו לעמוד במשימה...
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+# Complex pivoting
+babies_weight_length_long2 <- weight_length_babies %>% 
+  pivot_longer(cols = starts_with(c("weight", "length")),
+               names_to = c(".value", "month"),
+               names_sep = "_")
+
+
+# check if the two dfs are the same
+janitor::compare_df_cols(babies_weight_length_long, babies_weight_length_long2) %>% view()
+```
+
+</details>

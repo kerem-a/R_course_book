@@ -1,0 +1,30 @@
+project:
+  type: book
+
+execute:
+  freeze: false
+
+book:
+  title: "קורס מבוא ל-R"
+  author: "כרם אביטל"
+  chapters:
+    - index.qmd
+    - part: "תרגולים"
+      chapters:
+        - chapters/practice_1_25_26.qmd
+        - chapters/practice_2_25_26.qmd
+        - chapters/practice_3_25_26.qmd
+        - chapters/practice_4_25_26.qmd
+        - chapters/practice_5_25_26.qmd
+        - chapters/practice_6_25_26.qmd
+        - chapters/practice_7_25_26.qmd
+        - chapters/writing_code_correctly.qmd
+
+
+format:
+  html:
+    toc: true
+    css: style_heb.css
+    theme: cosmo
+    number-sections: false
+    anchor-links: false

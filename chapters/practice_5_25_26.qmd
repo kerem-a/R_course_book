@@ -1,0 +1,389 @@
+---
+title: "תרגיל 5 - ggplot ווקטורים"
+author: כרם אביטל
+execute:
+  eval: false
+output:
+  html_document:
+    css: style_chap.css
+    code-overflow: wrap
+    code-fold: true
+---
+
+::: {dir="rtl"}
+## 1.להתכונן
+
+-   להעלות את ספריות ***tidyverse*** ו-***readexl***
+
+-   להוריד מהמודל את הקובץ **validation_study**.xlsx. הקובץ כולל נתונים מתוך המחקר של התזה שלי על ולידציה של שאלון תזונה שנקרא MY-VEG-FFQ. את הכלי הזה השוויתי ליומן אכילה של שלושה ימים. יש בקובץ שלוש לשוניות, אנחנו נעבוד היום עם שלוש מהן: **macro_nutrients, micro_nutrients** ו-**characteristics**.
+
+-   נעלה את הנתונים מהלשוניות ונקרא להם **val_study_macro**, **val_study_micro** ו-**val_study_char**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+library(readxl)
+library(tidyverse) 
+
+# load the data
+val_study_macro<-  read_excel("data/validation_study.xlsx", sheet = "macro_nutrients")
+
+val_study_micro<-  read_excel("data/validation_study.xlsx", sheet = "micro_nutrients")
+#load the characteristics data
+val_study_char<-  read_excel("data/validation_study.xlsx", sheet = "characteristics")
+```
+
+</details>
+
+::: {dir="rtl"}
+## 2. קצת בדיקות איחודים והוספת שדות
+
+-   נשתמש בפקודה **unique** כדי לבדוק מה מכילה העמודה **tool** ב-**val_study_macro**
+
+-   ננסה להבין כמה משתתפים יש במחקר הזה: נבדוק את האורך של השדה **index_code** ואז נבדוק את האורך שוב אבל רק של ערכי **unique**. למעשה קיבלתם נתונים שהם כבר בפורמט ארוך!
+
+-   נאחד בין שני ה-**df** של **macro** ו-**micro** על בסיס ID וגם על בסיס tool ונקרא ל-df שיצרנו val_study_nut
+
+-   נאחד את **val_study_nut** עם **val_study_char**
+
+-   נכין DF בשם **val_study_join_plot_ready** שבתוכו ניצור שדה **age_group** לשלוש קטגוריות גיל:
+
+    -   עד גיל 30 **Young**
+
+    -   בין 30 ל-50 **Middle**
+
+    -   מעל 50 **Old**
+
+-   ניצור שדה פקטוריאלי שיקרא **age_group_f** שיכלול את שלוש הרמות האלו לפי הסדר. עוד מעט תבינו למה כדאי לעשות את זה...
+
+-   נבדוק את ה-class של שני המשתנים
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+glimpse(val_study_macro)
+
+# check unique values of the tool column
+unique(val_study_macro$tool)
+
+#check how many participants are in the study
+length(val_study_macro$index_code)
+length(unique(val_study_macro$index_code))
+
+
+glimpse(val_study_micro)
+
+# join macro and micro nutrient data
+val_study_nut<- val_study_macro %>% 
+  left_join(val_study_micro, by=c("index_code","tool"))
+
+glimpse(val_study_char)
+
+#remove mutual column
+val_study_char<- val_study_char %>% 
+  select(-tool)
+
+#join the two data sets
+val_study_join <- val_study_nut %>% 
+  left_join(val_study_char,by="index_code")
+
+glimpse(val_study_join)
+
+# create age groups
+val_study_join_plot_ready <- val_study_join %>% 
+  mutate(age_group = case_when(
+    age < 30 ~ "Young",
+    age >= 30 & age < 50 ~ "Middle",
+    age >= 50 ~ "Old"
+  ),
+  age_group_f = factor(age_group, levels = c("Young","Middle","Old")) # convert to factor variable
+  )
+
+class(val_study_join_plot_ready$age_group)
+class(val_study_join_plot_ready$age_group_f)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. וקטורים!
+
+נתעכב רגע על הפקודה c() שזו אחת הפקודות הכי שימושיות ב-R שבעזרתה אפשר ליצור את האובייקט הבסיסי ב-R שנקרא וקטור.
+
+-   נתנסה ביצירה של עוד וקטורים בעזרת פקודת c() וניתן להם שמות:
+
+    -   וקטור שיקרא names שנשים בתוכו כמה שמות
+
+    -   וקטור שנקרא important_numbers עם כמה מספרים
+
+    -   ניצור וקטור שנקרא age_labels עם אותם יחידות של קטגוריות גיל ממקודם. ונחליף את האובייקט שיצרנו בקוד ליצירת age_group_f
+
+-   נחשב ממוצע של הוקטור important_numbers
+
+    👈 כשאנחנו קוראים למשתנה מסויים מתוך ה-DF שלנו בעזרת הסימן \$. למעשה R מתייחס אליו כוקטור. למשל, כשבדקנו קודם את האורך של העמודה tool ב-DF שלנו בעזרת פקודת length אנחנו בעצם בדקנו את האורך של **הוקטור** שנקרא **val_study_macro\$too**l 🤯
+
+-   נחשב את הממוצע של הוקטור val_study_join_plot_ready\$food_energy
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+c("Kerem","Dani","Or","Arthur")
+
+names<- c("Kerem","Dani","Or","Arthur")
+
+important_numbers<- c(1,2,2674,5*4.5,4/7,6^2)
+important_numbers
+
+age_labels<- c("Young","Middle","Old")
+
+val_study_join_plot_ready <- val_study_join %>% 
+  mutate(age_group = case_when(
+    age < 30 ~ "Young",
+    age >= 30 & age < 50 ~ "Middle",
+    age >= 50 ~ "Old"
+  ),
+  age_group_f = factor(age_group, levels = age_labels) # convert to factor variable
+  )
+
+mean(important_numbers)
+
+mean(val_study_join_plot_ready$food_energy)
+```
+
+</details>
+
+::: {dir="rtl"}
+## 3. חזרה לגרף נקודות
+
+-   ניצור גרף נקודות שמשווה בין האנרגיה לחלבון
+
+-   נוסיף אלמנט של צבע על בסיס סוג הכלי ששימש להערכה תזונתית
+
+-   נוסיף **theme_classic** כותרת: Protein vs energy וגם קו מגמה עם **geom_smooth**
+
+-   נשנה גם את הכותרת מעל ה-legend של הגרף שלנו (ה-color) ל-Assessment tool
+
+-   נשנה את הצבעים של הקטגוריות בעזרת הפקודה **scale_color_manual** נגדיר לה ידנית צבעים. הפעם לא בעזרת כתיבה של השם של הצבע אלא בעזרת קוד שנקרא **hex** - נחפש בגוגל **color picker** נבחר שני צבעים ונעתיק את ה-hex שלהם
+
+-   נתיידד עם הפונקציה **theme**. נוריד בעזרתה את הכותרת של ה-legend ונעביר אותה למעל הגרף וגם נשנה את הצבע של הכותרת.
+
+-   נוסיף **facet_wrap** עבור **age_group -** מבינים מה הבעיה?
+
+-   נשנה את הפיצול של **facet_wrap** ל-**age_group_f** נוסיף nrow=3 על מנת להציג את הגרף בשלוש שורות במקום בטורים.
+
+-   נקרא לגרף החדש **protein_vs_energy_p2**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+#simple scatter plot
+val_study_join_plot_ready %>% 
+  ggplot(aes(food_energy,protein))+
+  geom_point()
+
+# scatter plot with some extra styling
+protein_vs_energy_p1<-val_study_join_plot_ready %>% 
+  ggplot(aes(food_energy,protein, color=tool))+
+  geom_point()+
+  theme_classic()+ #add theme
+  labs(title="Protein vs energy",
+       color= "Assessment tool")+ #add title
+  geom_smooth() #add trend line
+
+#check the plot
+protein_vs_energy_p1
+
+#some extras styling and facet_wrap
+protein_vs_energy_p2<- protein_vs_energy_p1 +
+  scale_color_manual(values = c("#395685","#9e5473"))+ #change colors manually
+  theme(
+    legend.title = element_blank(), #remove legend title
+    legend.position="top", # change  the legend  position
+    plot.title = element_text(color="#b06933") #change title color
+  )+
+  facet_wrap(. ~age_group_f,nrow = 3) #split based on age group
+
+#check the plot
+protein_vs_energy_p2
+```
+
+</details>
+
+::: {dir="rtl"}
+## 4. גרף Boxplot
+
+-   ניצור גרף קופסה עבור צריכת סיבים **total_dietary_fiber** נתנסה תחילה בלהגדיר את הסיבים בציר x ואז בציר y
+-   נוסיף הגדרה שהצבע (**fill**) יוגדר בהתאם ל-**age_group_f**
+-   נוסיף גם פקודה שמשנה את הצבעים לפי סט צבעים מוגדר מראש בעזרת **scale_fill_brewer** - **Set2** הכי יפה!
+-   נוסיף **geom_jitter** נשנה את ההגדרות לפי מה שמוצע בקוד (אין שום סיבה לנסות לזכור את הפורמט של הקוד הזה \[זה נכון להרבה מהדברים שמוצגים בשיעור הזה\], רק להבין מה אומרת כל הגדרה כדי לשחק איתה במידת הצורך).
+-   נוסיף כותרת לגרף ולציר y.
+-   בעזרת **theme** נסיר את axis.title.x, axis.text.x ו-legend.title
+-   נקרא לגרף המפואר שלנו בשם fiber_boxplot_p
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+
+
+# simple boxplot
+val_study_join_plot_ready %>% 
+  ggplot(aes(x=total_dietary_fiber)) +
+  geom_boxplot()
+
+# simple boxplot y axis (more common)
+val_study_join_plot_ready %>% 
+  ggplot(aes(y=total_dietary_fiber)) +
+  geom_boxplot()
+
+#change colors
+fiber_boxplot_p <- val_study_join_plot_ready %>%
+  ggplot(aes(y=total_dietary_fiber, x=age_group_f, fill=age_group_f )) +
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")
+
+#check the plot
+fiber_boxplot_p
+
+# add some extras
+fiber_boxplot_p <- fiber_boxplot_p +
+  geom_jitter(aes(color = age_group_f), # add points for each participant)
+              position = position_jitter(width = 0.1), 
+              size = 2, alpha = 0.6, show.legend = FALSE)+
+  labs(title = "Total dietary fiber by age group", # add title
+       y = "Total dietary fiber (g)")+
+  theme(  # remove axis titles and legend title
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    legend.title = element_blank()
+  )
+#check the plot
+fiber_boxplot_p
+```
+
+</details>
+
+::: {dir="rtl"}
+## 5. פיצול להרבה גרפים בסיוע pivot_longer
+
+-   ניצור וקטור בשם my_nuts עם שמות השדות protein, food_energy, total_dietary_fiber, iron
+
+-   נבחר את השדות שבוקטור my_nuts וגם את age_group_f
+
+-   נעשה **pivot_longer** על כל השדות למעט age_group_f
+
+-   ניקח את הקוד שהכנו מקודם לגרף **boxplot** ונשנה אותו קלות כך שיתאים למבנה החדש. נוסיף **facet_wrap** עם scales = "free"
+
+-   ננסה להחליף את ה-**boxplot** ב-היסטורגרמות. צריך להוריד הגדרה לציר y ולשנות את ההגדרה של ציר X וגם להוריד את ה- **stat_compare_means** וה-**geom_jitter** נקרא לאובייקט **nut_hist_p**
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+my_nuts<- c("protein", "food_energy", "total_dietary_fiber", "iron")
+# create a long data frame for multiple boxplots
+val_study_long <- val_study_join_plot_ready %>%
+  select(all_of(my_nuts), age_group_f) %>%
+  pivot_longer(cols = -age_group_f,
+               names_to = "nutrient",
+               values_to = "value")
+
+# create boxplot with almost the same code 
+nut_boxplot_p <- val_study_long %>%
+  ggplot(aes(x = age_group_f, y = value,fill = age_group_f)) + # change the y axis to x axis
+  geom_boxplot() +
+  geom_jitter(aes(color = age_group_f), 
+              position = position_jitter(width = 0.1), 
+              size = 2, alpha = 0.6, show.legend = FALSE)+
+  labs(title = "Nutrients by age group" # change the title from fiber to nutrients
+  )+
+  theme(
+    axis.title = element_blank(),
+    legend.title = element_blank()
+  )+
+  facet_wrap(~nutrient, scales = "free") # split the graph based on nutrient add scales = "free" 
+
+# check the plot
+nut_boxplot_p
+
+
+# create histogram with almost the same code
+nut_hist_p <- val_study_long %>%
+  ggplot(aes(x = value,fill = age_group_f)) +
+  geom_histogram() +
+  labs(title = "Nutrients by age group"
+  )+
+  theme(
+    axis.title = element_blank(),
+    legend.title = element_blank()
+  )+
+  facet_wrap(~nutrient, scales = "free") 
+
+# check the plot
+nut_hist_p
+```
+
+</details>
+
+::: {dir="rtl"}
+## 6. שמירה וסידור כמה גרפים ביחד {dir="rtl"}
+
+-   נתנסה בשמירה של גרף ישירות בעזרת כפתור ה-export
+
+-   נתנסה בשימוש בפקודת ggsave גם כ-jpg וגם כ-pdf
+
+-   נתקין את חבילת **cowplot** שעוזרת לסדר גרפים אחד ליד השני
+
+-   בעזרת **plot_grid** נסדר ארבעה גרפים, נגדיר ncol=2, nrow =2 כדי שאכן יסתדרו כמו שאנחנו רוצים
+
+-   נשמור עם save_plot
+
+-   התוצאה רחוקה מלהיות מושלמת. ניתן לשפר את זה קצת בעזרת שינוי של הפרופרורציות של הקובץ ששומרים
+
+-   ניתן לשפר את התוצאה עוד, בעזרת משחקים עם הגדלי טקסטים והקטנה של legend. זה מחוץ ל-scope שלנו לשיעור זה🫠
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+``` r
+# check the plot
+nut_hist_p
+
+
+# save some plots
+ggsave(filename = "output/nut_boxplot_p.jpg", plot =nut_boxplot_p )
+
+ggsave(filename = "output/nut_hist_p.pdf", plot =nut_hist_p )
+
+#install.packages("cowplot")
+library(cowplot)
+
+# join some plots
+plots<- plot_grid(protein_vs_energy_p2,fiber_boxplot_p,nut_boxplot_p,nut_hist_p,  ncol=2, nrow =2)
+
+#check the plot grid
+plots
+#save the multiple plots
+save_plot("output/gg_multiple_plot.jpg",plots)
+
+#some improvement  
+save_plot("output/gg_multiple_plot2.jpg",plots, base_height = 8, base_width = 10)
+```
