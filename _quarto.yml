@@ -11,13 +11,13 @@ book:
     - index.qmd
     - part: "תרגולים"
       chapters:
-        - chapters/practice_1_25_26.qmd
-        - chapters/practice_2_25_26.qmd
-        - chapters/practice_3_25_26.qmd
-        - chapters/practice_4_25_26.qmd
-        - chapters/practice_5_25_26.qmd
-        - chapters/practice_6_25_26.qmd
-        - chapters/practice_7_25_26.qmd
+        - chapters/practice_1.qmd
+        - chapters/practice_2.qmd
+        - chapters/practice_3.qmd
+        - chapters/practice_4.qmd
+        - chapters/practice_5.qmd
+        - chapters/practice_6.qmd
+        - chapters/practice_7.qmd
         - chapters/writing_code_correctly.qmd
 
 
