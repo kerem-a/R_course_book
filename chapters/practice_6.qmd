@@ -34,6 +34,7 @@ library(emo)
 
 library(readxl)
 library(tidyverse) 
+library(writexl)
 
 # load the data
 val_study_macro<-  read_excel("data/validation_study.xlsx", sheet = "macro_nutrients")
@@ -434,7 +435,7 @@ write_xlsx(macro_nuts_q5_wide, paste0("output/macro_nuts_q5_wide_",Sys.Date() ,"
 
 #display plots
 print(energy_q_plot)
-print(nuts_q_plot)
+print(macro_nuts_q5_p)
 ```
 
 </details>

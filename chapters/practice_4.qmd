@@ -173,7 +173,7 @@ w3_per_gender %>%
   geom_col()
 
 # add color based on gender
-weight_3m_mean %>% 
+w3_per_gender %>% 
   ggplot(aes(x=gender,y=mean_w3, fill=gender))+
   geom_col()
 ```

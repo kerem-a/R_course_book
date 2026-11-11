@@ -134,7 +134,7 @@ hist(trail_df2$bmi)
 
 trail_df3<- trail_df
 
-trail_df2$height_m<-trail_df2$height/100 
+trail_df3$height_m<-trail_df2$height/100 
 trail_df2$bmi<-trail_df2$weight/trail_df2$height_m^2
 ```
 
