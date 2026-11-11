@@ -63,19 +63,19 @@ median(weight_length_babies$weight_6)
 mean(weight_length_babies$weight_3,na.rm=TRUE) 
 median(weight_length_babies$weight_3, na.rm=TRUE) 
 
-weight_length_babies %>% 
+weight_length_babies|> 
   summarise(mean_w3=mean(weight_3, na.rm=TRUE),
             median_w3= median(weight_3,na.rm=TRUE))
 
 #mean and median per gender
-w3_per_gender<- weight_length_babies %>% 
-  group_by(gender) %>% 
+w3_per_gender<- weight_length_babies|> 
+  group_by(gender)|> 
   summarise(mean_w3=mean(weight_3, na.rm=TRUE),
             median_w3= median(weight_3,na.rm=TRUE))
 
 #mean and median per gender and week stage
-w3_per_gender_stage<- weight_length_babies %>% 
-  group_by(gender, week_stage) %>% 
+w3_per_gender_stage<- weight_length_babies|> 
+  group_by(gender, week_stage)|> 
   summarise(mean_w3=mean(weight_3, na.rm=TRUE),
             median_w3= median(weight_3,na.rm=TRUE))
 
@@ -111,23 +111,23 @@ view(w3_per_gender_stage)
 hist(weight_length_babies$weight_3) 
 
 #ggplot basic histogram
-weight_length_babies %>%
+weight_length_babies|>
   ggplot(aes(x=weight_3))+
   geom_histogram()
 
 #change the bins
-weight_length_babies %>%
+weight_length_babies|>
   ggplot(aes(x=weight_3))+
   geom_histogram(bins=15)
 
 #add some color
-weight_length_babies %>%
+weight_length_babies|>
   ggplot(aes(x=weight_3))+
   geom_histogram(bins=50, fill="pink",color="purple",alpha=0.7) #change some color
  
 
 #split the histogram based on gender and give it a name
-weight_3_hist<- weight_length_babies %>%
+weight_3_hist<- weight_length_babies|>
   ggplot(aes(x=weight_3,fill=gender))+ #add split based on gender
   geom_histogram(bins=50,alpha=0.7) 
 
@@ -161,19 +161,19 @@ theme_light()+ # change the theme
 
 ``` r
 
-weight_length_babies %>% 
+weight_length_babies|> 
   ggplot(aes(x=gender,y=weight_3))+
   geom_col()
 
 
 #calc the mean weight_3 per gender
 #basic bar plot
-w3_per_gender %>% 
+w3_per_gender|> 
   ggplot(aes(x=gender,y=mean_w3))+
   geom_col()
 
 # add color based on gender
-w3_per_gender %>% 
+w3_per_gender|> 
   ggplot(aes(x=gender,y=mean_w3, fill=gender))+
   geom_col()
 ```
@@ -257,29 +257,29 @@ ggsave("output/one_year_scatterplot.jpg", one_year_scatterplot)
 ``` r
 
 
-baby_length <- weight_length_babies %>% 
+baby_length <- weight_length_babies|> 
   select(id, starts_with("length") )
   
 #create long df for babies length
-babies_length_long<- baby_length %>% 
+babies_length_long<- baby_length|> 
   pivot_longer(cols = -id,
                names_to = "month",
                values_to = "length"
               )
               
 #create long df for babies length and remove prefix
-babies_length_long<- baby_length %>% 
+babies_length_long<- baby_length|> 
   pivot_longer(cols = -id,
                names_to = "month",
                values_to = "length",
                names_prefix = "length_"
               )
               
-baby_length <- weight_length_babies %>% 
+baby_length <- weight_length_babies|> 
   select(id, gender, starts_with("length") )
 
 #create long df for babies length and remove prefix
-babies_length_long<- baby_length %>% 
+babies_length_long<- baby_length|> 
   pivot_longer(cols = c(-id,-gender),
                names_to = "month",
                values_to = "length",
@@ -305,13 +305,13 @@ babies_length_long<- baby_length %>%
 ``` r
 
 #go back with pivot wider
-babies_length_wide <- babies_length_long %>% 
+babies_length_wide <- babies_length_long|> 
   pivot_wider(names_from = month,
               values_from = length
              )
 
 
-babies_length_wide <- babies_length_long %>% 
+babies_length_wide <- babies_length_long|> 
   pivot_wider(names_from = month,
               values_from = length,
               names_prefix = "length_")
@@ -341,27 +341,27 @@ babies_length_wide <- babies_length_long %>%
 
 ``` r
 #summarize the data per gender and month
-length_summary<- babies_length_long %>% 
-  group_by(gender, month) %>% 
+length_summary<- babies_length_long|> 
+  group_by(gender, month)|> 
   summarise(mean_length=mean(length)
   )
 
 # simple bar plot
-length_summary %>% 
+length_summary|> 
   ggplot(aes(x=month, y=mean_length))+
   geom_bar(stat="identity")
 
 # Change the month to numeric
-length_summary<- length_summary %>% 
+length_summary<- length_summary|> 
   mutate(month=as.numeric(month))
 
 # simple bar plot again
-length_summary %>% 
+length_summary|> 
   ggplot(aes(x=month, y=mean_length))+
   geom_bar(stat="identity")
 
 # Change some stuff
-length_summary %>% 
+length_summary|> 
   ggplot(aes(x=month, y=mean_length))+
   geom_bar(stat="identity")+
   facet_wrap(.~gender)+ # split by gender
@@ -370,7 +370,7 @@ length_summary %>%
   scale_x_continuous(breaks = seq(0, 12, by = 3)) # Change the x axis scale
   
 # add fill=gender instead of facet_wrap
-length_summary %>% 
+length_summary|> 
   ggplot(aes(x=month, y=mean_length, fill=gender))+
   geom_bar(stat="identity")+
   labs(title = "Mean length per month", x="Month", y="Mean length (cm)")+ 
@@ -378,7 +378,7 @@ length_summary %>%
   scale_x_continuous(breaks = seq(0, 12, by = 3)) 
 
 #Change the position of the bars
-length_summary %>% 
+length_summary|> 
   ggplot(aes(x=month, y=mean_length, fill=gender))+
   geom_bar(stat="identity", position = "dodge")+  # Change the position of the bars
   labs(title = "Mean weight per month", x="Month", y="Mean weight")+ 
@@ -403,19 +403,19 @@ length_summary %>%
 ``` r
 
 #separate weight df
-baby_weight <- weight_length_babies %>% 
+baby_weight <- weight_length_babies|> 
   select(id,birth_week,week_stage,starts_with("weight") )
 
 
 #create long df for baby_weight
-babies_weight_long<- baby_weight %>% 
+babies_weight_long<- baby_weight|> 
   pivot_longer(cols = starts_with("weight"),
                names_to = "month",
                values_to = "weight",
                names_prefix = "weight_")
 
 #create long df for baby_weight and remove prefix
-babies_weight_long<- baby_weight %>% 
+babies_weight_long<- baby_weight|> 
   pivot_longer(cols = starts_with("weight"),
                names_to = "month",
                values_to = "weight",
@@ -423,7 +423,7 @@ babies_weight_long<- baby_weight %>%
 
 
 #rejoin weight and length
-babies_weight_length_long<- babies_weight_long %>% 
+babies_weight_length_long<- babies_weight_long|> 
   left_join(babies_length_long, by = c("id", "month"))
 ```
 
@@ -447,14 +447,14 @@ babies_weight_length_long<- babies_weight_long %>%
 ``` r
 
 # Complex pivoting
-babies_weight_length_long2 <- weight_length_babies %>% 
+babies_weight_length_long2 <- weight_length_babies|> 
   pivot_longer(cols = starts_with(c("weight", "length")),
                names_to = c(".value", "month"),
                names_sep = "_")
 
 
 # check if the two dfs are the same
-janitor::compare_df_cols(babies_weight_length_long, babies_weight_length_long2) %>% view()
+janitor::compare_df_cols(babies_weight_length_long, babies_weight_length_long2)|> view()
 ```
 
 </details>

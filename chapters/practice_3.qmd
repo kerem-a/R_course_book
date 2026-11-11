@@ -71,17 +71,17 @@ colnames(babies_length)
 
 ```{r}
 #rename the index name
-babies_weight_clean <- babies_weight %>% 
+babies_weight_clean <- babies_weight|> 
   rename(id=number)
 
 #install.packages("janitor")
 library(janitor)
 
 # unite the format of the colnames 
-babies_weight_clean <-babies_weight_clean %>% 
+babies_weight_clean <-babies_weight_clean|> 
   clean_names()
 
-babies_length_clean <- babies_length %>% 
+babies_length_clean <- babies_length|> 
   clean_names()
 ```
 
@@ -100,9 +100,9 @@ babies_length_clean <- babies_length %>%
 <summary>Press to show R code</summary>
 
 ```{r}
-babies_weight_clean2<- babies_weight_clean %>%
-  mutate(preterm=if_else(birth_week<38,"yes","no")) %>% #create categorical variable
-  mutate(preterm2=if_else(birth_week<38,TRUE,FALSE)) %>% #create logical variable
+babies_weight_clean2<- babies_weight_clean|>
+  mutate(preterm=if_else(birth_week<38,"yes","no"))|> #create categorical variable
+  mutate(preterm2=if_else(birth_week<38,TRUE,FALSE))|> #create logical variable
   mutate(preterm3=birth_week<38) #create logical variable (shorter way)
 
 table(babies_weight_clean2$preterm)
@@ -144,7 +144,7 @@ sum(babies_weight_clean$abnormality)
 table(babies_weight_clean$abnormality)
 
 #create catgories for week stage
-baby_weight_week_stage <-babies_weight_clean %>% 
+baby_weight_week_stage <-babies_weight_clean|> 
   mutate(week_stage = case_when(
     birth_week<28 ~ "Extremely preterm",
     birth_week>=28 & birth_week<32 ~ "Very preterm",
@@ -154,7 +154,7 @@ baby_weight_week_stage <-babies_weight_clean %>%
     
   ))
 
-table(baby_weight_week_stage$week_stage) %>% view()
+table(baby_weight_week_stage$week_stage)|> view()
 ```
 
 </details>
@@ -176,12 +176,12 @@ table(baby_weight_week_stage$week_stage) %>% view()
 
 ```{r}
 #filter out exclusion createra
-babies_weight_join_ready<- baby_weight_week_stage %>% 
+babies_weight_join_ready<- baby_weight_week_stage|> 
   filter(  abnormality ==FALSE &
-             !is.na(gender)) %>% 
-   filter(week_stage !="Extremely preterm" & week_stage !="Postterm") %>% 
+             !is.na(gender))|> 
+   filter(week_stage !="Extremely preterm" & week_stage !="Postterm")|> 
   #another option
-  # filter(birth_week>28 & birth_week<43 ) %>% 
+  # filter(birth_week>28 & birth_week<43 )|> 
   select(-name,-abnormality)
 ```
 
@@ -210,22 +210,22 @@ babies_weight_join_ready<- baby_weight_week_stage %>%
 ```{r}
 
 # trying to join
-weight_length_babies <- babies_weight_join_ready %>% 
+weight_length_babies <- babies_weight_join_ready|> 
   left_join(babies_length_clean, by="id")
 
 # create a join ready length df
-babies_length_join_ready<-babies_length_clean %>% 
+babies_length_join_ready<-babies_length_clean|> 
   select(id, length_3, length_6,length_9,length_12)
 # a bit shorter
-babies_length_join_ready<-babies_length_clean %>% 
+babies_length_join_ready<-babies_length_clean|> 
   select(id, length_3:length_12)
 
 #The best way IMO
-babies_length_join_ready<-babies_length_clean %>% 
+babies_length_join_ready<-babies_length_clean|> 
   select(id, starts_with("length") )
 
 #Join again 
-weight_length_babies <- babies_weight_join_ready %>% 
+weight_length_babies <- babies_weight_join_ready|> 
   left_join(babies_length_join_ready, by="id")
 ```
 

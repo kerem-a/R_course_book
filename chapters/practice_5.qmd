@@ -80,23 +80,23 @@ length(unique(val_study_macro$index_code))
 glimpse(val_study_micro)
 
 # join macro and micro nutrient data
-val_study_nut<- val_study_macro %>% 
+val_study_nut<- val_study_macro|> 
   left_join(val_study_micro, by=c("index_code","tool"))
 
 glimpse(val_study_char)
 
 #remove mutual column
-val_study_char<- val_study_char %>% 
+val_study_char<- val_study_char|> 
   select(-tool)
 
 #join the two data sets
-val_study_join <- val_study_nut %>% 
+val_study_join <- val_study_nut|> 
   left_join(val_study_char,by="index_code")
 
 glimpse(val_study_join)
 
 # create age groups
-val_study_join_plot_ready <- val_study_join %>% 
+val_study_join_plot_ready <- val_study_join|> 
   mutate(age_group = case_when(
     age < 30 ~ "Young",
     age >= 30 & age < 50 ~ "Middle",
@@ -145,7 +145,7 @@ important_numbers
 
 age_labels<- c("Young","Middle","Old")
 
-val_study_join_plot_ready <- val_study_join %>% 
+val_study_join_plot_ready <- val_study_join|> 
   mutate(age_group = case_when(
     age < 30 ~ "Young",
     age >= 30 & age < 50 ~ "Middle",
@@ -189,12 +189,12 @@ mean(val_study_join_plot_ready$food_energy)
 
 ``` r
 #simple scatter plot
-val_study_join_plot_ready %>% 
+val_study_join_plot_ready|> 
   ggplot(aes(food_energy,protein))+
   geom_point()
 
 # scatter plot with some extra styling
-protein_vs_energy_p1<-val_study_join_plot_ready %>% 
+protein_vs_energy_p1<-val_study_join_plot_ready|> 
   ggplot(aes(food_energy,protein, color=tool))+
   geom_point()+
   theme_classic()+ #add theme
@@ -241,17 +241,17 @@ protein_vs_energy_p2
 
 
 # simple boxplot
-val_study_join_plot_ready %>% 
+val_study_join_plot_ready|> 
   ggplot(aes(x=total_dietary_fiber)) +
   geom_boxplot()
 
 # simple boxplot y axis (more common)
-val_study_join_plot_ready %>% 
+val_study_join_plot_ready|> 
   ggplot(aes(y=total_dietary_fiber)) +
   geom_boxplot()
 
 #change colors
-fiber_boxplot_p <- val_study_join_plot_ready %>%
+fiber_boxplot_p <- val_study_join_plot_ready|>
   ggplot(aes(y=total_dietary_fiber, x=age_group_f, fill=age_group_f )) +
   geom_boxplot()+
   scale_fill_brewer(palette = "Set2")
@@ -298,14 +298,14 @@ fiber_boxplot_p
 ``` r
 my_nuts<- c("protein", "food_energy", "total_dietary_fiber", "iron")
 # create a long data frame for multiple boxplots
-val_study_long <- val_study_join_plot_ready %>%
-  select(all_of(my_nuts), age_group_f) %>%
+val_study_long <- val_study_join_plot_ready|>
+  select(all_of(my_nuts), age_group_f)|>
   pivot_longer(cols = -age_group_f,
                names_to = "nutrient",
                values_to = "value")
 
 # create boxplot with almost the same code 
-nut_boxplot_p <- val_study_long %>%
+nut_boxplot_p <- val_study_long|>
   ggplot(aes(x = age_group_f, y = value,fill = age_group_f)) + # change the y axis to x axis
   geom_boxplot() +
   geom_jitter(aes(color = age_group_f), 
@@ -324,7 +324,7 @@ nut_boxplot_p
 
 
 # create histogram with almost the same code
-nut_hist_p <- val_study_long %>%
+nut_hist_p <- val_study_long|>
   ggplot(aes(x = value,fill = age_group_f)) +
   geom_histogram() +
   labs(title = "Nutrients by age group"

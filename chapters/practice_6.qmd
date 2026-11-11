@@ -44,21 +44,21 @@ val_study_micro<-  read_excel("data/validation_study.xlsx", sheet = "micro_nutri
 val_study_char<-  read_excel("data/validation_study.xlsx", sheet = "characteristics")
 
 # join macro and micro nutrient data
-val_study_nut<- val_study_macro %>% 
+val_study_nut<- val_study_macro|> 
   left_join(val_study_micro, by=c("index_code","tool"))
 
 #remove mutual column
-val_study_char<- val_study_char %>% 
+val_study_char<- val_study_char|> 
   select(-tool)
 
 #join the two data sets
-val_study_join <- val_study_nut %>% 
+val_study_join <- val_study_nut|> 
   left_join(val_study_char,by="index_code")
 
 glimpse(val_study_join)
 
 # create age groups
-val_study_analysis_ready <- val_study_join %>% 
+val_study_analysis_ready <- val_study_join|> 
   mutate(age_group = case_when(
     age < 30 ~ "Young",
     age >= 30 & age < 50 ~ "Middle",
@@ -87,7 +87,7 @@ rm(list=setdiff(ls(), c("val_study_analysis_ready"))) # remove all objects excep
 <summary>Press to show R code</summary>
 
 ``` r
-summary_energy <-val_study_analysis_ready %>% 
+summary_energy <-val_study_analysis_ready|> 
   summarise(mean_eng=mean(food_energy,na.rm = T),
             median_eng=median(food_energy,na.rm = T),
             sd_eng=sd(food_energy,na.rm = T)
@@ -101,19 +101,19 @@ round(3.14159,2)
 round(summary_energy$mean_eng,2)
 
 #now let's round all the values in the summary
-summary_energy<-val_study_analysis_ready %>% 
+summary_energy<-val_study_analysis_ready|> 
   summarise(mean_eng=round(mean(food_energy,na.rm = T),2),
             median_eng=round(median(food_energy,na.rm = T),2),
             sd_eng=round(sd(food_energy,na.rm = T),2)
   )
 
 #grouping per tool and summarizing
-summary_energy_per_tool<- val_study_analysis_ready %>% 
-  group_by(tool) %>% 
+summary_energy_per_tool<- val_study_analysis_ready|> 
+  group_by(tool)|> 
   summarise(mean_eng=round(mean(food_energy,na.rm = T),2),
             median_eng=round(median(food_energy,na.rm = T),2),
             sd_eng=round(sd(food_energy,na.rm = T),2)
-  ) %>% 
+  )|> 
   ungroup()
 ```
 
@@ -148,8 +148,8 @@ summary_energy_per_tool<- val_study_analysis_ready %>%
 ``` r
 #calculate the median for some nutrients 
 #the long way
-med_nuts1<- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+med_nuts1<- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     carbs_med=median(carbohydrates, na.rm = TRUE), 
     fat_med=median(total_fat, na.rm = TRUE),
@@ -159,8 +159,8 @@ med_nuts1<- val_study_analysis_ready %>%
 
 med_nuts1
 #using across
-med_nuts2<- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+med_nuts2<- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     across(.cols=c(carbohydrates,total_fat,protein), #select the columns
            .fns=~median(.,na.rm = TRUE) #apply the function
@@ -169,8 +169,8 @@ med_nuts2<- val_study_analysis_ready %>%
 
 med_nuts2
 #change the name of the variables
-med_nuts2<- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+med_nuts2<- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     across(.cols=c(carbohydrates,total_fat,protein), #select the columns
            .fns=~median(.,na.rm = TRUE), #apply the function
@@ -180,8 +180,8 @@ med_nuts2<- val_study_analysis_ready %>%
   ungroup()
 
 #calculate the median for all the numeric variables
-median_all_numeric <- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+median_all_numeric <- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     across(.cols=where(is.numeric),
            .fns=~median(.,na.rm = TRUE),
@@ -193,18 +193,18 @@ median_all_numeric <- val_study_analysis_ready %>%
 macro_nuts <- c("food_energy", "protein","total_fat", "carbohydrates" ,"total_dietary_fiber")
 
 #calculate the median for all the macro_nuts
-median_macro_nuts <- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+median_macro_nuts <- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     across(.cols=all_of(macro_nuts),
            .fns=~median(.,na.rm = TRUE),
            .names = "{col}_median"
-    )) %>% 
+    ))|> 
   ungroup() 
 
 median_macro_nuts
 
-median_macro_nuts_round<- median_macro_nuts %>% 
+median_macro_nuts_round<- median_macro_nuts|> 
 mutate(across(where(is.numeric),
                 .fns=~round(.,1)
   ))
@@ -242,15 +242,15 @@ median_macro_nuts_round
 
 ``` r
 library(gtsummary)
-val_study_analysis_ready %>% 
-  select(-index_code) %>%
+val_study_analysis_ready|> 
+  select(-index_code)|>
   tbl_summary()
-val_study_analysis_ready %>% 
-  select(-index_code) %>%
+val_study_analysis_ready|> 
+  select(-index_code)|>
   tbl_summary(by=tool)
 
-val_study_analysis_ready %>%
-  select(tool, all_of(macro_nuts), calcium, iron) %>% 
+val_study_analysis_ready|>
+  select(tool, all_of(macro_nuts), calcium, iron)|> 
   tbl_summary(
   by=tool,
 missing = "no", # hide missing data
@@ -259,8 +259,8 @@ statistic = list( #argument for the statistic showed on the table
 )) 
 
 
-table1<- val_study_analysis_ready %>%
-  select(-index_code, -all_of(macro_nuts),-calcium,-iron) %>% 
+table1<- val_study_analysis_ready|>
+  select(-index_code, -all_of(macro_nuts),-calcium,-iron)|> 
   tbl_summary(
   by=tool,
 missing = "no", 
@@ -271,8 +271,8 @@ statistic = list( #argument for the statistic showed on the table
 table1
 
 
-table1_by_diet<- val_study_analysis_ready %>%
-  select(-index_code, -all_of(macro_nuts),-calcium,-iron) %>% 
+table1_by_diet<- val_study_analysis_ready|>
+  select(-index_code, -all_of(macro_nuts),-calcium,-iron)|> 
   tbl_summary(
     by=dietary_patterns,
     missing = "no", 
@@ -300,11 +300,11 @@ table1_by_diet
 <summary>Press to show R code</summary>
 
 ``` r
-val_study_analysis_check <- val_study_analysis_ready %>% 
+val_study_analysis_check <- val_study_analysis_ready|> 
   mutate(smoking_y_n_log = if_else(smoking_y_n=="yes",TRUE,FALSE))
 
 
-val_study_analysis_ready2 <- val_study_analysis_ready %>% 
+val_study_analysis_ready2 <- val_study_analysis_ready|> 
   mutate(across(ends_with("_y_n"),
                 .fns=~if_else(.=="yes",TRUE,FALSE)
   ))
@@ -370,23 +370,23 @@ quantile(val_study_analysis_ready$food_energy, q_5)
 
 
 #create a df with the quantiles per age_group
-energy_q_per_age<-val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+energy_q_per_age<-val_study_analysis_ready|> 
+  group_by(age_group)|> 
   reframe(energy_q=quantile(food_energy, probs = q_5)
-          ) %>% 
+          )|> 
   ungroup()
 
 #add the quantiles numbers
-energy_q_per_age<- val_study_analysis_ready %>%
-  group_by(age_group) %>% 
+energy_q_per_age<- val_study_analysis_ready|>
+  group_by(age_group)|> 
   reframe(quant=as.factor(q_5), #add as factor for later plots
     energy_q = quantile(food_energy, q_5)
-          ) %>% 
-  mutate(energy_q=round(energy_q,2)) %>% 
+          )|> 
+  mutate(energy_q=round(energy_q,2))|> 
   ungroup()
 
 #bar graph per q
-energy_q_per_age %>%
+energy_q_per_age|>
   ggplot(aes(x=quant,y=energy_q, fill=age_group))+
   geom_col(position = "dodge" )+ # I used geom_col instead of geom_bar and than there's no need for stat=identity 
   labs(title="Energy intake by age group",
@@ -397,19 +397,19 @@ energy_q_per_age %>%
 
 
 #create quantiles across all the macro_nuts
-macro_nuts_q_per_age <- val_study_analysis_ready %>%
-  group_by(age_group) %>% 
+macro_nuts_q_per_age <- val_study_analysis_ready|>
+  group_by(age_group)|> 
   reframe(quant=as.factor(q_5),
-    across(all_of(macro_nuts), ~quantile(.x, q_5))) %>% 
-  mutate(across(all_of(macro_nuts), ~round(.,1))) %>% 
+    across(all_of(macro_nuts), ~quantile(.x, q_5)))|> 
+  mutate(across(all_of(macro_nuts), ~round(.,1)))|> 
   ungroup()
 
 #pivot longer
-macro_nuts_q_per_age_long<- macro_nuts_q_per_age %>%
+macro_nuts_q_per_age_long<- macro_nuts_q_per_age|>
   pivot_longer(cols=all_of(macro_nuts), names_to = "macro_nut", values_to = "value") 
 
 #bar graph per q for all macro_nuts
-macro_nuts_q5_p<- macro_nuts_q_per_age_long %>%
+macro_nuts_q5_p<- macro_nuts_q_per_age_long|>
   ggplot(aes(x=quant,y=value, fill=age_group))+
   geom_col(position = "dodge")+ 
   labs(title="nut intake by age group",
@@ -423,9 +423,9 @@ macro_nuts_q5_p<- macro_nuts_q_per_age_long %>%
 ggsave("output/macro_nuts_q5.png", plot = macro_nuts_q5_p, width = 10, height = 10, units = "cm")
 
 #pivot wider per age group 
-macro_nuts_q5_wide<- macro_nuts_q_per_age_long %>% 
-  pivot_wider(names_from = age_group, values_from = value) %>% 
-  relocate(macro_nut,.before = quant) %>% #this is for changing the order of one column
+macro_nuts_q5_wide<- macro_nuts_q_per_age_long|> 
+  pivot_wider(names_from = age_group, values_from = value)|> 
+  relocate(macro_nut,.before = quant)|> #this is for changing the order of one column
   arrange(macro_nut) #changing the order of all the columns
 
 #save excel add date to the file name
@@ -470,7 +470,7 @@ fn_height_calc(70, 25)
 fn_height_calc(val_study_analysis_ready$weight[2], val_study_analysis_ready$bmi[2])
 
 #apply the function to the data
-val_study_analysis_ready <- val_study_analysis_ready %>% 
+val_study_analysis_ready <- val_study_analysis_ready|> 
   mutate(height = fn_height_calc(weight, bmi))
 
 #Build a function that change the default for na.rm to TRUE + round the result
@@ -483,13 +483,13 @@ fn_med_na_rm <- function(x){
 fn_med_na_rm(val_study_analysis_ready$food_energy)
 
 #use the function on the data
-median_macro_nuts2 <- val_study_analysis_ready %>% 
-  group_by(age_group) %>% 
+median_macro_nuts2 <- val_study_analysis_ready|> 
+  group_by(age_group)|> 
   summarise(
     across(.cols=all_of(macro_nuts),
            .fns=~fn_med_na_rm(.),
            .names = "{col}_median"
-    )) %>% 
+    ))|> 
   ungroup() 
 
 
@@ -501,7 +501,7 @@ fn_y_n_to_logic<- function(x){
 fn_y_n_to_logic("yes")
 fn_y_n_to_logic("no")
 
-val_study_analysis_ready2 <- val_study_analysis_ready %>% 
+val_study_analysis_ready2 <- val_study_analysis_ready|> 
   mutate(across(ends_with("_y_n"),
                 .fns=~fn_y_n_to_logic(.)
   ))
@@ -529,22 +529,22 @@ val_study_analysis_ready2 <- val_study_analysis_ready %>%
 
 ``` r
 #calculate sum of macro nutrients
-val_study_analysis_ready3<-val_study_analysis_ready2 %>% 
+val_study_analysis_ready3<-val_study_analysis_ready2|> 
   mutate(sum_macro=sum(protein, total_fat, carbohydrates))
 
 #using rowwise will give the results per participant (what we wanted)
-val_study_analysis_ready3<-val_study_analysis_ready2 %>% 
-  rowwise() %>% 
-  mutate(sum_macro1=sum(protein, total_fat, carbohydrates)) %>% 
+val_study_analysis_ready3<-val_study_analysis_ready2|> 
+  rowwise()|> 
+  mutate(sum_macro1=sum(protein, total_fat, carbohydrates))|> 
   ungroup() 
   #we can do it also manually without rowwise:
-  val_study_analysis_ready3<-val_study_analysis_ready3 %>%
+  val_study_analysis_ready3<-val_study_analysis_ready3|>
 mutate(
   sum_macro2=protein + total_fat + carbohydrates) 
 
 #using c_across to sum all macro nutrients in the vector
-val_study_analysis_ready3 <- val_study_analysis_ready3 %>%
- rowwise() %>%
-  mutate(sum_all_macro_vector=sum(c_across(all_of(macro_nuts)))) %>% 
+val_study_analysis_ready3 <- val_study_analysis_ready3|>
+ rowwise()|>
+  mutate(sum_all_macro_vector=sum(c_across(all_of(macro_nuts))))|> 
   ungroup()
 ```

@@ -95,12 +95,12 @@ BMI=weight/(height)^2^
 <summary>Show R code</summary>
 
 ```{r}
-trail_df2 <- trail_df %>%  # take the trail_df, copy it to a new df and than...
-mutate(height_m=height/100) %>%  # create a new variable for height_m and than...
+trail_df2 <- trail_df|>  # take the trail_df, copy it to a new df and than...
+mutate(height_m=height/100)|>  # create a new variable for height_m and than...
 mutate(bmi=weight/ height_m^2) # calculate BMI
 
 # let's make this code even shorter
-trail_df2 <- trail_df %>%  # take the trail_df, copy it to a new df and than...
+trail_df2 <- trail_df|>  # take the trail_df, copy it to a new df and than...
 mutate(bmi=weight/(height/100)^2)
 
 hist(trail_df2$bmi)
@@ -113,7 +113,7 @@ hist(trail_df2$bmi)
 
 ![](images/clipboard-2066724768.png){width="527"}
 
-👈לכתוב %\<% זה מעצבן אז כדאי להכיר את קיצור המקלדת **Ctrl + Shift + M**
+👈לכתוב |> זה מעצבן אז כדאי להכיר את קיצור המקלדת **Ctrl + Shift + M**
 :::
 
 ::: {dir="rtl"}
@@ -156,10 +156,10 @@ trail_df2$bmi<-trail_df2$weight/trail_df2$height_m^2
 <summary>Show R code</summary>
 
 ```{r}
-trail_df_select_rename <- trail_df2 %>% # take trail_df2 and than...
-  rename(age_years=age) %>%  #rename age and than...
-  select(sex, age_years,bmi) %>% # select only specific vars and than...
-  mutate(age_days=age_years*365) %>%  # create a new var and than...
+trail_df_select_rename <- trail_df2|> # take trail_df2 and than...
+  rename(age_years=age)|>  #rename age and than...
+  select(sex, age_years,bmi)|> # select only specific vars and than...
+  mutate(age_days=age_years*365)|>  # create a new var and than...
   select(-age_years)  # remove age_years variable
 ```
 
@@ -188,20 +188,20 @@ trail_df_select_rename <- trail_df2 %>% # take trail_df2 and than...
 
 ```{r}
 #filter out exclusion createra
-trail_df_filtered <- trail_df2 %>% 
+trail_df_filtered <- trail_df2|> 
   filter(bmi<25)
 
-trail_df_filtered <- trail_df2 %>% 
-  filter(bmi <=25) %>% 
-  filter(CVD ==TRUE) %>% 
+trail_df_filtered <- trail_df2|> 
+  filter(bmi <=25)|> 
+  filter(CVD ==TRUE)|> 
   filter(group !="control")
 
 #in one step:
-trail_df_filtered <- trail_df2 %>% 
+trail_df_filtered <- trail_df2|> 
   filter(bmi <=25 & CVD ==TRUE & group !="control")
 
 
-trail_df_filtered2 <- trail_df2 %>% 
+trail_df_filtered2 <- trail_df2|> 
   filter(bmi <=25 | CVD ==TRUE | group !="control")
 ```
 
