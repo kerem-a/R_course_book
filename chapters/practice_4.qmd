@@ -32,60 +32,10 @@ weight_length_babies<-  read_excel("data/weight_length_babies.xlsx")
 
 </details>
 
-::: {dir="rtl"}
-## 2. Group and summarise
 
--   נחשב את המשקל ה**ממוצע והחציון** בחודש השלישי נקבל NA
-
--   ננסה לחשב ממוצע וחציון עבור החודש השישי (יעבוד בלי בעיה)
-
--   נוסיף **na.rm=TRUE** לחישוב הממוצע והחציון בחודש השלישי
-
--   בעזרת פקודת **summarise** ניצור DF קטן שמכיל את הממוצע והחציון לחודש השלישי
-
--   כעת נוסיף גם **group_by**() על מנת לפצל את החישוב לבנים ובנות בנפרד בעזרת ***summarise()***. נשמור אותו בשם w3_per_gender
-
--   נחשב את הגובה הממוצע והחציון בחודש השלישי לבנים ובנות בנפרד ולפי קטגוריות של ***birth_stage*** בנפרד - נשמור את התוצאה כ-DF נפרד בשם w3_per_gender_stage
-:::
-
-<details>
-
-<summary>Press to show R code</summary>
-
-```{r}
-#simple mean and median calculation
-mean(weight_length_babies$weight_3) #will give you NA
-median(weight_length_babies$weight_3) #will give you NA
-
-mean(weight_length_babies$weight_6) 
-median(weight_length_babies$weight_6) 
-
-mean(weight_length_babies$weight_3,na.rm=TRUE) 
-median(weight_length_babies$weight_3, na.rm=TRUE) 
-
-weight_length_babies|> 
-  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
-            median_w3= median(weight_3,na.rm=TRUE))
-
-#mean and median per gender
-w3_per_gender<- weight_length_babies|> 
-  group_by(gender)|> 
-  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
-            median_w3= median(weight_3,na.rm=TRUE))
-
-#mean and median per gender and week stage
-w3_per_gender_stage<- weight_length_babies|> 
-  group_by(gender, week_stage)|> 
-  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
-            median_w3= median(weight_3,na.rm=TRUE))
-
-view(w3_per_gender_stage)
-```
-
-</details>
 
 ::: {dir="rtl"}
-## 3. היסטוגרמות - geom_histogram
+## 2. היסטוגרמות - geom_histogram
 
 -   ניצור היסטוגרמה עבור weight_3. תחילה עם base R כדי להזכר, ואז עם **ggplot**
 
@@ -143,13 +93,67 @@ theme_light()+ # change the theme
 
 </details>
 
+
+::: {dir="rtl"}
+## 3. Group and summarise
+
+-   נחשב את המשקל ה**ממוצע והחציון** בחודש השלישי נקבל NA
+
+-   ננסה לחשב ממוצע וחציון עבור החודש השישי (יעבוד בלי בעיה)
+
+-   נוסיף **na.rm=TRUE** לחישוב הממוצע והחציון בחודש השלישי
+
+-   בעזרת פקודת **summarise** ניצור DF קטן שמכיל את הממוצע והחציון לחודש השלישי
+
+-   כעת נוסיף גם **group_by**() על מנת לפצל את החישוב לבנים ובנות בנפרד בעזרת ***summarise()***. נשמור אותו בשם w3_per_gender
+
+-   נחשב את הגובה הממוצע והחציון בחודש השלישי לבנים ובנות בנפרד ולפי קטגוריות של ***birth_stage*** בנפרד - נשמור את התוצאה כ-DF נפרד בשם w3_per_gender_stage
+:::
+
+<details>
+
+<summary>Press to show R code</summary>
+
+```{r}
+#simple mean and median calculation
+mean(weight_length_babies$weight_3) #will give you NA
+median(weight_length_babies$weight_3) #will give you NA
+
+mean(weight_length_babies$weight_6) 
+median(weight_length_babies$weight_6) 
+
+mean(weight_length_babies$weight_3,na.rm=TRUE) 
+median(weight_length_babies$weight_3, na.rm=TRUE) 
+
+weight_length_babies|> 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+#mean and median per gender
+w3_per_gender<- weight_length_babies|> 
+  group_by(gender)|> 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+#mean and median per gender and week stage
+w3_per_gender_stage<- weight_length_babies|> 
+  group_by(gender, week_stage)|> 
+  summarise(mean_w3=mean(weight_3, na.rm=TRUE),
+            median_w3= median(weight_3,na.rm=TRUE))
+
+view(w3_per_gender_stage)
+```
+
+</details>
+
+
 ::: {dir="rtl"}
 ## 4. גרף עמודות - geom_bar
 
 כעת אנחנו רוצים ליצור גרף עמודות שמשווה בין בנים לבנות את המשקל הממוצע בגיל שלושה חודשים
 
 -   ננסה להשתמש בפקודת geom_col() על ה-DF weight_length_babies מה הבעיה במה שקיבלנו?
--   על מנת ליצור את הגרף כמו שצריך נשתמש ב-df שיצרנו בתחילת השיעור: w3_per_gender
+-   על מנת ליצור את הגרף כמו שצריך נשתמש ב-df : w3_per_gender
 -   כעת ניצור את הגרף המבוקש.
 -   נפריד את הצבעים על בסיס מין.
 -   אנחנו נחזור בהמשך לגרפים יותר מורכבים מהסוג הזה.
