@@ -230,22 +230,22 @@
     ]
   },
   {
-    "objectID": "chapters/practice_4.html#group-and-summarise",
-    "href": "chapters/practice_4.html#group-and-summarise",
+    "objectID": "chapters/practice_4.html#היסטוגרמות---geom_histogram",
+    "href": "chapters/practice_4.html#היסטוגרמות---geom_histogram",
     "title": "תרגיל 4 - גרפים (ggplot) ועוד tidyverse",
-    "section": "2. Group and summarise",
-    "text": "2. Group and summarise\n\nנחשב את המשקל הממוצע והחציון בחודש השלישי נקבל NA\nננסה לחשב ממוצע וחציון עבור החודש השישי (יעבוד בלי בעיה)\nנוסיף na.rm=TRUE לחישוב הממוצע והחציון בחודש השלישי\nבעזרת פקודת summarise ניצור DF קטן שמכיל את הממוצע והחציון לחודש השלישי\nכעת נוסיף גם group_by() על מנת לפצל את החישוב לבנים ובנות בנפרד בעזרת summarise(). נשמור אותו בשם w3_per_gender\nנחשב את הגובה הממוצע והחציון בחודש השלישי לבנים ובנות בנפרד ולפי קטגוריות של birth_stage בנפרד - נשמור את התוצאה כ-DF נפרד בשם w3_per_gender_stage",
+    "section": "2. היסטוגרמות - geom_histogram",
+    "text": "2. היסטוגרמות - geom_histogram\n\nניצור היסטוגרמה עבור weight_3. תחילה עם base R כדי להזכר, ואז עם ggplot\nנוסיף את הארגומנט bins=15\nנשנה את הארגומנט bins ל-50 בנוסף נשנה את הצבע של העמודות ונוסיף שקיפות עם alpha.\n👈 אפשר לראות איזה שמות של צבעים R מקבל, בעזרת הפקודה colors() או פשוט לחפש בגוגל R base colors\nנפצל את ההיסטוגרמה לפי צבעים עבור בנים ובנות\nנשמור את הגרף כאובייקט בשם birth_week_hist\nנוסיף לאובייקט ששמרנו את הכותרת: Three Months Weight Distribution ונוסיף כותרות ברורות יותר לצירים. נוסיף גם שכבה של theme_light().",
     "crumbs": [
       "תרגולים",
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>תרגיל 4 - גרפים (ggplot) ועוד tidyverse</span>"
     ]
   },
   {
-    "objectID": "chapters/practice_4.html#היסטוגרמות---geom_histogram",
-    "href": "chapters/practice_4.html#היסטוגרמות---geom_histogram",
+    "objectID": "chapters/practice_4.html#group-and-summarise",
+    "href": "chapters/practice_4.html#group-and-summarise",
     "title": "תרגיל 4 - גרפים (ggplot) ועוד tidyverse",
-    "section": "3. היסטוגרמות - geom_histogram",
-    "text": "3. היסטוגרמות - geom_histogram\n\nניצור היסטוגרמה עבור weight_3. תחילה עם base R כדי להזכר, ואז עם ggplot\nנוסיף את הארגומנט bins=15\nנשנה את הארגומנט bins ל-50 בנוסף נשנה את הצבע של העמודות ונוסיף שקיפות עם alpha.\n👈 אפשר לראות איזה שמות של צבעים R מקבל, בעזרת הפקודה colors() או פשוט לחפש בגוגל R base colors\nנפצל את ההיסטוגרמה לפי צבעים עבור בנים ובנות\nנשמור את הגרף כאובייקט בשם birth_week_hist\nנוסיף לאובייקט ששמרנו את הכותרת: Three Months Weight Distribution ונוסיף כותרות ברורות יותר לצירים. נוסיף גם שכבה של theme_light().",
+    "section": "3. Group and summarise",
+    "text": "3. Group and summarise\n\nנחשב את המשקל הממוצע והחציון בחודש השלישי נקבל NA\nננסה לחשב ממוצע וחציון עבור החודש השישי (יעבוד בלי בעיה)\nנוסיף na.rm=TRUE לחישוב הממוצע והחציון בחודש השלישי\nבעזרת פקודת summarise ניצור DF קטן שמכיל את הממוצע והחציון לחודש השלישי\nכעת נוסיף גם group_by() על מנת לפצל את החישוב לבנים ובנות בנפרד בעזרת summarise(). נשמור אותו בשם w3_per_gender\nנחשב את הגובה הממוצע והחציון בחודש השלישי לבנים ובנות בנפרד ולפי קטגוריות של birth_stage בנפרד - נשמור את התוצאה כ-DF נפרד בשם w3_per_gender_stage",
     "crumbs": [
       "תרגולים",
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>תרגיל 4 - גרפים (ggplot) ועוד tidyverse</span>"
@@ -256,7 +256,7 @@
     "href": "chapters/practice_4.html#גרף-עמודות---geom_bar",
     "title": "תרגיל 4 - גרפים (ggplot) ועוד tidyverse",
     "section": "4. גרף עמודות - geom_bar",
-    "text": "4. גרף עמודות - geom_bar\nכעת אנחנו רוצים ליצור גרף עמודות שמשווה בין בנים לבנות את המשקל הממוצע בגיל שלושה חודשים\n\nננסה להשתמש בפקודת geom_col() על ה-DF weight_length_babies מה הבעיה במה שקיבלנו?\nעל מנת ליצור את הגרף כמו שצריך נשתמש ב-df שיצרנו בתחילת השיעור: w3_per_gender\nכעת ניצור את הגרף המבוקש.\nנפריד את הצבעים על בסיס מין.\nאנחנו נחזור בהמשך לגרפים יותר מורכבים מהסוג הזה.",
+    "text": "4. גרף עמודות - geom_bar\nכעת אנחנו רוצים ליצור גרף עמודות שמשווה בין בנים לבנות את המשקל הממוצע בגיל שלושה חודשים\n\nננסה להשתמש בפקודת geom_col() על ה-DF weight_length_babies מה הבעיה במה שקיבלנו?\nעל מנת ליצור את הגרף כמו שצריך נשתמש ב-df : w3_per_gender\nכעת ניצור את הגרף המבוקש.\nנפריד את הצבעים על בסיס מין.\nאנחנו נחזור בהמשך לגרפים יותר מורכבים מהסוג הזה.",
     "crumbs": [
       "תרגולים",
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>תרגיל 4 - גרפים (ggplot) ועוד tidyverse</span>"
